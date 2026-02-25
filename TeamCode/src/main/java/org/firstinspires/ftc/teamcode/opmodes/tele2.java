@@ -101,11 +101,12 @@ public class tele2 extends OpMode {
 
         telemetry.addData("X", robot.follower.getPose().getX());
         telemetry.addData("Y", robot.follower.getPose().getY());
-        telemetry.addData("Current Pose", PoseStorage.currentPose);
+        telemetry.addData("Current Pose: ", PoseStorage.currentPose);
         telemetry.addData("Last detected distance: ", robot.colorSensor.lastDistance);
         telemetry.addData("Calibrated: ", calibrated);
-        telemetry.addData("Shooter Velocity", robot.shooter.getVelocity());
-        telemetry.addData("Artifacts Loaded", artifactsLoaded);
+        telemetry.addData("Shooter Velocity: ", robot.shooter.getVelocity());
+        telemetry.addData("Artifacts Loaded: ", artifactsLoaded);
+        telemetry.addData("Error: ", robot.spindexer.getError());
         telemetry.update();
     }
 
