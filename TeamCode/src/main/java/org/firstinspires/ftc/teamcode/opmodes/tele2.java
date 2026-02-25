@@ -30,6 +30,7 @@ public class tele2 extends OpMode {
     public int artifactsLoaded = 0;
     private final Timer stateTimer = new Timer();
     private final Timer shootTimer = new Timer();
+    private boolean close = false;
     Pose targetPose;
     private enum ShooterMode { AUTO, MANUAL }
     private ShooterMode shooterMode = ShooterMode.AUTO;
@@ -109,6 +110,7 @@ public class tele2 extends OpMode {
         telemetry.addData("Artifacts Loaded: ", artifactsLoaded);
         telemetry.addData("Error: ", robot.spindexer.getError());
         telemetry.addData("Mode: ", aState);
+        telemetry.addData("Close: ", close);
         telemetry.addData("Sequence: ", autoState);
         telemetry.update();
     }
@@ -150,18 +152,18 @@ public class tele2 extends OpMode {
         }
 
 
-        if (robot.colorSensor.detectNewSample()) {
-            if (autoState.equals(AutoShootState.IDLE) && artifactsLoaded < 3) {
-                robot.spindexer.rotateCounterclockwise();
-                artifactsLoaded++;
-                gamepad1.rumbleBlips(1);
-            }
-        }
+//        if (robot.colorSensor.detectNewSample()) {
+//            if (autoState.equals(AutoShootState.IDLE) && artifactsLoaded < 3) {
+//                robot.spindexer.rotateCounterclockwise();
+//                artifactsLoaded++;
+//                gamepad1.rumbleBlips(1);
+//            }
+//        }
 
     }
 
     private void automatic() {
-        boolean close = robot.follower.getPose().getY() > 80;
+        close = robot.follower.getPose().getY() < 80;
 
         switch (autoState) {
             case IDLE:
@@ -249,7 +251,7 @@ public class tele2 extends OpMode {
     }
 
     private void manual(){
-        boolean close = robot.follower.getPose().getY() > 80;
+        close = robot.follower.getPose().getY() < 80;
 
         if (gamepad1.xWasPressed()){
             robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);

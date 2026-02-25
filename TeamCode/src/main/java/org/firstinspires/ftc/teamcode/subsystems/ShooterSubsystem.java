@@ -28,9 +28,9 @@ public class ShooterSubsystem{
     // Grid of Y coordinates
     private static final double[] ys = {10, 38, 66};
     private static final double[][] closeVelocities = {
-            {800, 800, 815},
-            {800, 800, 815},
-            {830, 830, 845}
+            {100, 100, 115},
+            {100, 100, 115},
+            {130, 130, 145}
     };
 
     // The Math Object that connects the dots
@@ -97,13 +97,14 @@ public class ShooterSubsystem{
         double xdist = Math.abs(target.getX() - current.getX());
         double ydist = Math.abs(target.getY() - current.getY());
 
+        on();
+
         if (close){
             setTarget(closeInterpolation.interpolate(xdist, ydist));
         }
         else {
             setTarget(1200);
         }
-        on();
     }
 
     private void updateSignals() {
