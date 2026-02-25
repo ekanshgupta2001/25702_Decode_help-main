@@ -133,6 +133,8 @@ public class redCloseAuto extends OpMode {
         telemetry.addData("Path State", pathState);
         telemetry.addData("Follower Busy", follower.isBusy());
         telemetry.addData("Shooter Done", shooterSeq.isDone());
+        telemetry.addData("X", r.follower.getPose().getX());
+        telemetry.addData("Y", r.follower.getPose().getY());
         telemetry.update();
     }
     public void intakeSequence(){
