@@ -63,6 +63,7 @@ public class closePath {
     public PathChain scoreP() {
         return follower.pathBuilder()
                 .addPath(new BezierLine(start, scorefirst))
+                .setReversed()
                 .setLinearHeadingInterpolation(start.getHeading(), scorefirst.getHeading())
                 .build();
     }
@@ -70,6 +71,7 @@ public class closePath {
     public PathChain pickOne() {
         return follower.pathBuilder()
                 .addPath(new BezierCurve(scorefirst, setFirstPick, firstPick))
+                .setReversed()
                 .setBrakingStrength(.75)
                 .setLinearHeadingInterpolation(scorefirst.getHeading(), firstPick.getHeading())
                 .build();
@@ -78,6 +80,7 @@ public class closePath {
     public PathChain scoreTwo() {
         return follower.pathBuilder()
                 .addPath(new BezierLine(firstPick, scoreSecond))
+                .setReversed()
                 .setLinearHeadingInterpolation(firstPick.getHeading(), scoreSecond.getHeading())
                 .build();
     }
@@ -85,6 +88,7 @@ public class closePath {
     public PathChain pickTwo() {
         return follower.pathBuilder()
                 .addPath(new BezierCurve(scoreSecond, setSecondPick, secondPick))
+                .setReversed()
                 .setBrakingStrength(.75)
                 .setLinearHeadingInterpolation(scoreSecond.getHeading(), secondPick.getHeading())
                 .build();
@@ -93,6 +97,7 @@ public class closePath {
     public PathChain scoreThird() {
         return follower.pathBuilder()
                 .addPath(new BezierCurve(secondPick, setThirdScore, thirdScore))
+                .setReversed()
                 .setLinearHeadingInterpolation(secondPick.getHeading(), thirdScore.getHeading())
                 .build();
     }
@@ -100,6 +105,7 @@ public class closePath {
     public PathChain pickThree() {
         return follower.pathBuilder()
                 .addPath(new BezierCurve(thirdScore, setThirdPick, thirdPick))
+                .setReversed()
                 .setBrakingStrength(.75)
                 .setLinearHeadingInterpolation(setThirdPick.getHeading(), thirdPick.getHeading())
                 .build();
@@ -108,6 +114,7 @@ public class closePath {
     public PathChain scoreFourth() {
         return follower.pathBuilder()
                 .addPath(new BezierLine(thirdPick, fourthScore))
+                .setReversed()
                 .setLinearHeadingInterpolation(thirdPick.getHeading(), fourthScore.getHeading())
                 .build();
     }

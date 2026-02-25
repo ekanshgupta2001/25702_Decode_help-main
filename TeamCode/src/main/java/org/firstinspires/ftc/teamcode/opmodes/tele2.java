@@ -4,9 +4,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.PoseStorage;
@@ -30,9 +28,11 @@ public class tele2 extends OpMode {
     private int shotsFired = 0;
     public int artifactsLoaded = 0;
     private final Timer stateTimer = new Timer();
+    private final Timer shootTimer = new Timer();
     Pose targetPose;
     private enum ShooterMode { AUTO, MANUAL }
     private ShooterMode shooterMode = ShooterMode.AUTO;
+    private boolean aState = true;
     public double dist = 0.0;
     private static final Pose BLUE_TOP_TRIANGLE_POSE = new Pose(72, 72, 0);
     private static final Pose BLUE_START_POSE = new Pose(12, 12, 0);
@@ -83,9 +83,13 @@ public class tele2 extends OpMode {
         Intake();
 
         if (gamepad1.startWasPressed()){
+            aState = !aState;
+        }
+
+        if (!aState){
             shooterMode = ShooterMode.MANUAL;
         }
-        if (gamepad1.backWasPressed()){
+        if (aState){
             shooterMode = ShooterMode.AUTO;
         }
 
@@ -97,9 +101,6 @@ public class tele2 extends OpMode {
 
         telemetry.addData("X", robot.follower.getPose().getX());
         telemetry.addData("Y", robot.follower.getPose().getY());
-        telemetry.addData("Last detected distance: ", robot.colorSensor.lastDistance);
-        telemetry.addData("Calibrated: ", calibrated);
-
         telemetry.update();
     }
 
@@ -137,11 +138,13 @@ public class tele2 extends OpMode {
 
 
         if (robot.colorSensor.detectNewSample()) {
-            if (autoState.equals(AutoShootState.IDLE)) {
+            if (autoState.equals(AutoShootState.IDLE) && artifactsLoaded < 3) {
                 robot.spindexer.rotateCounterclockwise();
+                artifactsLoaded++;
                 gamepad1.rumbleBlips(1);
             }
         }
+
     }
 
     private void automatic() {
@@ -157,7 +160,7 @@ public class tele2 extends OpMode {
                 break;
 
             case SPINNING_UP:
-                if (robot.shooter.isAtVelocity()) {
+                if (robot.shooter.isAtVelocity() || shootTimer.getElapsedTimeSeconds() > 2.0) {
                     if (stateTimer.getElapsedTime() > 250){
                         stateTimer.resetTimer();
                         autoState = AutoShootState.READY;
@@ -179,8 +182,11 @@ public class tele2 extends OpMode {
             case WAITING_FOR_INDEX:
                 if (robot.indexer.currentState == Indexer.State.IDLE) {
                     shotsFired++;
+                    if (artifactsLoaded > 0){
+                        artifactsLoaded--;
+                    }
 
-                    if (shotsFired >= 3) {
+                    if (shotsFired >= 3 || artifactsLoaded == 0) {
                         autoState = AutoShootState.COMPLETE;
                     } else {
                         robot.indexer.disable();
@@ -198,14 +204,14 @@ public class tele2 extends OpMode {
 
             case COMPLETE:
                 robot.shooter.off();
-                robot.indexer.enable();
+                robot.indexer.disable();
                 autoState = AutoShootState.IDLE;
                 break;
         }
 
         if (gamepad1.bWasPressed()) {
             robot.shooter.off();
-            robot.indexer.enable();
+            robot.indexer.disable();
             autoState = AutoShootState.IDLE;
         }
     }

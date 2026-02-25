@@ -50,6 +50,7 @@ public class farPath {
     public PathChain scoreP() {
         return follower.pathBuilder()
                 .addPath(new BezierLine(start, scoreFirst))
+                .setReversed()
                 .setLinearHeadingInterpolation(start.getHeading(), scoreFirst.getHeading())
                 .build();
     }
@@ -57,6 +58,7 @@ public class farPath {
     public PathChain pickOne() {
         return follower.pathBuilder()
                 .addPath(new BezierCurve(scoreFirst, setFirstPick, firstPick))
+                .setReversed()
                 .setBrakingStrength(.75)
                 .setLinearHeadingInterpolation(scoreFirst.getHeading(), firstPick.getHeading())
                 .build();
@@ -65,6 +67,7 @@ public class farPath {
     public PathChain scoreTwo() {
         return follower.pathBuilder()
                 .addPath(new BezierLine(firstPick, scoreSecond))
+                .setReversed()
                 .setLinearHeadingInterpolation(firstPick.getHeading(), scoreSecond.getHeading())
                 .build();
     }
@@ -72,6 +75,7 @@ public class farPath {
     public PathChain pickTwo() {
         return follower.pathBuilder()
                 .addPath(new BezierCurve(scoreSecond, setSecondPick, secondPick))
+                .setReversed()
                 .setBrakingStrength(.75)
                 .setLinearHeadingInterpolation(scoreSecond.getHeading(), secondPick.getHeading())
                 .build();
@@ -80,6 +84,7 @@ public class farPath {
     public PathChain scoreThird() {
         return follower.pathBuilder()
                 .addPath(new BezierLine(secondPick, thirdScore))
+                .setReversed()
                 .setLinearHeadingInterpolation(secondPick.getHeading(), thirdScore.getHeading())
                 .build();
     }
@@ -87,6 +92,7 @@ public class farPath {
     public PathChain parkPath() {
         return follower.pathBuilder()
                 .addPath(new BezierLine(thirdScore, park))
+                .setReversed()
                 .setLinearHeadingInterpolation(thirdScore.getHeading(), park.getHeading())
                 .build();
     }

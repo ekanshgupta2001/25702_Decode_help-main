@@ -103,6 +103,7 @@ public class ShooterSubsystem{
         else {
             setTarget(2000);
         }
+        on();
     }
 
     private void updateSignals() {
