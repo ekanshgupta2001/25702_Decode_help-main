@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -10,11 +11,12 @@ public class ColorSensor {
     private DistanceSensor distanceSensor;
     private Telemetry telemetry;
 
-    private final int SAMPLE_SIZE = 15;
+    private final int SAMPLE_SIZE = 8;
     private int consecutiveDetections = 0;
 
     // Adjust this based on your raw telemetry readings
     private final double DETECTION_DISTANCE_CM = 5.5;
+    private final Timer colourTimer = new Timer();
     public double lastDistance;
 
     public void init(HardwareMap hardwareMap, Telemetry tele) {
@@ -50,7 +52,7 @@ public class ColorSensor {
         telemetry.addData("Confidence Count", consecutiveDetections + "/" + SAMPLE_SIZE);
 
         // 4. Trigger exactly once when confidence is met
-        if (consecutiveDetections == SAMPLE_SIZE) {
+        if (consecutiveDetections >= SAMPLE_SIZE) {
             return true;
         }
 

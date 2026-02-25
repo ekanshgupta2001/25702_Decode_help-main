@@ -28,9 +28,9 @@ public class ShooterSubsystem{
     // Grid of Y coordinates
     private static final double[] ys = {10, 38, 66};
     private static final double[][] closeVelocities = {
-            {1200, 1200, 1275},
-            {1275, 1275, 1350},
-            {1325, 1360, 1400}
+            {800, 800, 815},
+            {800, 800, 815},
+            {830, 830, 845}
     };
 
     // The Math Object that connects the dots
@@ -89,7 +89,7 @@ public class ShooterSubsystem{
 
     public void periodic(){
         if (active){
-            setPower((kV * getTarget()) + (kP * (getTarget() - getVelocity())) + kS);
+            setPower(-((kV * getTarget()) + (kP * (getTarget() - getVelocity())) + kS));
         }
     }
 
@@ -101,7 +101,7 @@ public class ShooterSubsystem{
             setTarget(closeInterpolation.interpolate(xdist, ydist));
         }
         else {
-            setTarget(2000);
+            setTarget(1200);
         }
         on();
     }

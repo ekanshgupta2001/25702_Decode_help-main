@@ -25,6 +25,7 @@ public class tele2 extends OpMode {
         COMPLETE
     }
     private AutoShootState autoState = AutoShootState.IDLE;
+    private boolean indexerStarted = false;
     private int shotsFired = 0;
     public int artifactsLoaded = 0;
     private final Timer stateTimer = new Timer();
@@ -107,6 +108,8 @@ public class tele2 extends OpMode {
         telemetry.addData("Shooter Velocity: ", robot.shooter.getVelocity());
         telemetry.addData("Artifacts Loaded: ", artifactsLoaded);
         telemetry.addData("Error: ", robot.spindexer.getError());
+        telemetry.addData("Mode: ", aState);
+        telemetry.addData("Sequence: ", autoState);
         telemetry.update();
     }
 
@@ -142,6 +145,10 @@ public class tele2 extends OpMode {
             robot.intake.spinIn();
         }
 
+        if (gamepad1.rightBumperWasPressed()){
+            robot.spindexer.rotateCounterclockwise();
+        }
+
 
         if (robot.colorSensor.detectNewSample()) {
             if (autoState.equals(AutoShootState.IDLE) && artifactsLoaded < 3) {
@@ -166,7 +173,9 @@ public class tele2 extends OpMode {
                 break;
 
             case SPINNING_UP:
+                robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);
                 if (robot.shooter.isAtVelocity() || shootTimer.getElapsedTimeSeconds() > 2.0) {
+                    robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);
                     if (stateTimer.getElapsedTime() > 250){
                         stateTimer.resetTimer();
                         autoState = AutoShootState.READY;
@@ -175,27 +184,43 @@ public class tele2 extends OpMode {
                 break;
 
             case READY:
+                robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);
                 shotsFired = 0;
                 autoState = AutoShootState.SHOOTING;
 
                 break;
 
             case SHOOTING:
-                robot.indexer.enable();
+                robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);
+                indexerStarted = false;
+
+                // FIX: Call Index() to actually fire the game piece!
+                robot.indexer.Index();
+
                 autoState = AutoShootState.WAITING_FOR_INDEX;
                 break;
 
             case WAITING_FOR_INDEX:
+                robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);
+
+                // This logic is actually very smart! It waits for the indexer
+                // to register the movement before checking if it finished.
+                if (!indexerStarted) {
+                    if (robot.indexer.currentState != Indexer.State.IDLE) {
+                        indexerStarted = true;
+                    }
+                    break;
+                }
+
+                // Now that it started, we wait for it to return to IDLE
                 if (robot.indexer.currentState == Indexer.State.IDLE) {
                     shotsFired++;
-                    if (artifactsLoaded > 0){
-                        artifactsLoaded--;
-                    }
-
-                    if (shotsFired >= 3 || artifactsLoaded == 0) {
+                    if (shotsFired >= 3) {
                         autoState = AutoShootState.COMPLETE;
                     } else {
-                        robot.indexer.disable();
+                        // NOTE: Check if you actually need to call .disable() here.
+                        // If .disable() turns off the servo entirely, the next shot might fail.
+                        // robot.indexer.disable();
                         robot.spindexer.rotateCounterclockwise();
                         autoState = AutoShootState.SPINNING;
                     }
@@ -211,6 +236,7 @@ public class tele2 extends OpMode {
             case COMPLETE:
                 robot.shooter.off();
                 robot.indexer.disable();
+                indexerStarted = false;
                 autoState = AutoShootState.IDLE;
                 break;
         }
