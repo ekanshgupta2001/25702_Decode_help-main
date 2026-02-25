@@ -12,7 +12,6 @@ public class Intake {
         intake = hardwareMap.get(DcMotor.class, "intake");
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
-
     public void spinIn() {
         intake.setPower(intakePower);
     }

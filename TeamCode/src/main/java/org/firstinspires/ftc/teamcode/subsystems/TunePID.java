@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-//@TeleOp(name = "Tune Spindexer PID")
+@TeleOp(name = "Tune Spindexer PID")
 public class TunePID extends LinearOpMode {
 
     private Spindexer spindexer;

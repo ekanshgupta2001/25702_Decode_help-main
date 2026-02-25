@@ -4,7 +4,9 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.PoseStorage;
@@ -95,6 +97,9 @@ public class tele2 extends OpMode {
 
         telemetry.addData("X", robot.follower.getPose().getX());
         telemetry.addData("Y", robot.follower.getPose().getY());
+        telemetry.addData("Last detected distance: ", robot.colorSensor.lastDistance);
+        telemetry.addData("Calibrated: ", calibrated);
+
         telemetry.update();
     }
 
@@ -130,13 +135,11 @@ public class tele2 extends OpMode {
             robot.intake.spinIn();
         }
 
-        if (artifactsLoaded < 3) {
-            if (robot.colorSensor.detectNewSample()) {
-                if (autoState.equals(AutoShootState.IDLE)) {
-                    robot.spindexer.rotateCounterclockwise();
-                    artifactsLoaded++;
-                    gamepad1.rumbleBlips(1);
-                }
+
+        if (robot.colorSensor.detectNewSample()) {
+            if (autoState.equals(AutoShootState.IDLE)) {
+                robot.spindexer.rotateCounterclockwise();
+                gamepad1.rumbleBlips(1);
             }
         }
     }
@@ -176,11 +179,8 @@ public class tele2 extends OpMode {
             case WAITING_FOR_INDEX:
                 if (robot.indexer.currentState == Indexer.State.IDLE) {
                     shotsFired++;
-                    if (artifactsLoaded > 0){
-                        artifactsLoaded--;
-                    }
 
-                    if (shotsFired >= 3 || artifactsLoaded == 0) {
+                    if (shotsFired >= 3) {
                         autoState = AutoShootState.COMPLETE;
                     } else {
                         robot.indexer.disable();

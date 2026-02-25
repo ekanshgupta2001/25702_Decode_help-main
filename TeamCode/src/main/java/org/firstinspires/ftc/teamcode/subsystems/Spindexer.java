@@ -13,12 +13,12 @@ public class Spindexer {
     private String motorName = "motor2";
 
     // PID Coefficients
-    public static double Kp = 0.0685;
+    public static double Kp = 0.01;
     public static double Ki = 0;
-    public static double Kd = 0.24;
-    public static double KpClose = 0.03;
+    public static double Kd = 0.1;
+    public static double KpClose = 0.015;
     public static double KiClose = 0.000;
-    public static double KdCLose = 0.29;
+    public static double KdCLose = 0.04;
     // Limits
     public static double MAX_POWER = 0.9;
     public static double MIN_POWER = -0.9;
