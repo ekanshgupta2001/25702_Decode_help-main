@@ -102,6 +102,7 @@ public class tele2 extends OpMode {
 
         indexer.Update();
         spindexer.update();
+
         shooter.periodic();
         // Manual Spindexer logic
         if (indexer.currentState == Indexer.State.IDLE) {
