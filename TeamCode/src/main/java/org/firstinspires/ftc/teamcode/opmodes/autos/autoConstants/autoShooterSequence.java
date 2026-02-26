@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 
 public class autoShooterSequence {
     Robot r;
+    double dist = 0;
 
     private enum State {
         IDLE,

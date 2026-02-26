@@ -11,19 +11,19 @@ import org.firstinspires.ftc.teamcode.util.Alliance;
 public class farPath {
     public Follower follower;
 
-    public Pose start = new Pose(56, 8, Math.toRadians(90));
-    public Pose scoreFirst = new Pose(56, 15, Math.toRadians(108));
+    public Pose start = new Pose(56, 8, Math.toRadians(270));
+    public Pose scoreFirst = new Pose(56, 15, Math.toRadians(288));
 
-    public Pose setFirstPick = new Pose(40, 36, Math.toRadians(180));
-    public Pose firstPick = new Pose(6, 36, Math.toRadians(180));
+    public Pose setFirstPick = new Pose(40, 36, Math.toRadians(0));
+    public Pose firstPick = new Pose(6, 36, Math.toRadians(0));
 
-    public Pose scoreSecond = new Pose(56, 15, Math.toRadians(108));
+    public Pose scoreSecond = new Pose(56, 15, Math.toRadians(288));
 
-    public Pose setSecondPick = new Pose(9, 13, Math.toRadians(180));
-    public Pose secondPick = new Pose(9, 6, Math.toRadians(180));
+    public Pose setSecondPick = new Pose(9, 13, Math.toRadians(0));
+    public Pose secondPick = new Pose(9, 6, Math.toRadians(0));
 
-    public Pose thirdScore = new Pose(56, 15, Math.toRadians(108));
-    public Pose park = new Pose(38, 12, Math.toRadians(90));
+    public Pose thirdScore = new Pose(56, 15, Math.toRadians(288));
+    public Pose park = new Pose(38, 12, Math.toRadians(270));
 
     private int index;
 
