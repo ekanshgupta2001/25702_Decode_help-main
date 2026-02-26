@@ -144,7 +144,6 @@ public class blueCloseAuto extends OpMode {
             if (color != ColorSensor.DetectedColor.NONE) {
                r.spindexer.rotateCounterclockwise();
                artifactsLoaded++;
-               gamepad1.rumbleBlips(1);
             }
         }
     }

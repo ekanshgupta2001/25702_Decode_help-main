@@ -1,285 +1,121 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import com.pedropathing.geometry.Pose;
-import com.pedropathing.util.Timer;
+import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.Robot;
-import org.firstinspires.ftc.teamcode.util.Alliance;
-import org.firstinspires.ftc.teamcode.util.PoseStorage;
-import org.firstinspires.ftc.teamcode.util.Spinner;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants; // Ensure this points to your actual Constants file
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensor;
 import org.firstinspires.ftc.teamcode.subsystems.Indexer;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.ShooterManualSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 
 @TeleOp
 public class tele2 extends OpMode {
-    private Robot robot;
-    private boolean calibrated = false;
 
-    private enum AutoShootState {
-        IDLE,
-        SPINNING_UP,
-        READY,
-        SHOOTING,
-        WAITING_FOR_INDEX,
-        SPINNING,
-        COMPLETE
-    }
+    private Follower follower;
+    private DcMotor spinner;
+    private DcMotor frontLeft, frontRight, backLeft, backRight;
 
-    private AutoShootState autoState = AutoShootState.IDLE;
-    private boolean indexerStarted = false;
-    private int shotsFired = 0;
-    public int artifactsLoaded = 0;
-
-    private final Timer stateTimer = new Timer();
-    private final Timer shootTimer = new Timer();
-
-    Pose targetPose;
-
-    private enum ShooterMode { AUTO, MANUAL }
-    private ShooterMode shooterMode = ShooterMode.AUTO;
-    private boolean aState = true;
-
-    public double dist = 0.0;
-
-    private static final Pose BLUE_TOP_TRIANGLE_POSE = new Pose(72, 72, 0);
-    private static final Pose BLUE_START_POSE = new Pose(12, 12, 0);
-
+    private final Spindexer spindexer = new Spindexer();
+    private final Indexer indexer = new Indexer();
+    private final Intake intake = new Intake();
+    private final ColorSensor colorSensor = new ColorSensor();
+    private ShooterManualSubsystem shooter;
     private double currentShooterPower = 0.0;
+    private double artifactsLoaded = 0;
 
     @Override
     public void init() {
-        robot = new Robot(hardwareMap, telemetry, Alliance.Blue, Spinner.PPG);
+        // Initialize the Follower (This sets up your drivetrain motors automatically)
+        follower = Constants.createFollower(hardwareMap);
 
-        telemetry.addLine("Robot Initialized via Robot Container. Waiting for start...");
-        telemetry.update();
-    }
+        frontLeft = hardwareMap.get(DcMotor.class, "lf");
+        backLeft = hardwareMap.get(DcMotor.class, "lr");
+        frontRight = hardwareMap.get(DcMotor.class, "rf");
+        backRight = hardwareMap.get(DcMotor.class, "rr");
 
-    @Override
-    public void init_loop() {
-        if (gamepad1.dpadUpWasPressed()) {
-            robot.setAlliance(Alliance.Blue);
-        }
-        if (gamepad1.dpadDownWasPressed()) {
-            robot.setAlliance(Alliance.Red);
-        }
-        if (gamepad1.dpadLeftWasPressed()) {
-            robot.setSpinner(Spinner.GPP);
-        }
-        if (gamepad1.dpadRightWasPressed()) {
-            robot.setSpinner(Spinner.PGP);
-        }
+        // Set motor directions (adjust based on your robot's configuration)
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        frontRight.setDirection(DcMotor.Direction.FORWARD);
+        backRight.setDirection(DcMotor.Direction.FORWARD);
 
-        telemetry.addData("Alliance", robot.alliance);
-        telemetry.addLine("Ready to Drive!");
-        telemetry.update();
+        // Set zero power behavior
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+
+        // Initialize other hardware
+        spinner = hardwareMap.get(DcMotor.class, "motor2");
+
+
+        // Subsystem Inits
+        colorSensor.init(hardwareMap, telemetry);
+        intake.Init(telemetry, hardwareMap);
+        spindexer.init(hardwareMap, true);
+        indexer.Init(hardwareMap, telemetry, spindexer);
+        shooter = new ShooterManualSubsystem(hardwareMap);
     }
 
     @Override
     public void start() {
-        robot.follower.setStartingPose(PoseStorage.currentPose);
-        robot.follower.startTeleopDrive();
 
-        calibrated = false;
-        gamepad1.rumbleBlips(1);
     }
 
     @Override
     public void loop() {
-        robot.periodic();
+        follower.update();
 
-        Drive();
-        Intake();
+        // Pedro Pathing built-in TeleOp drive
+        // ==== Mecanum Drive ====
+        double drive = gamepad1.left_stick_y;  // Reverse Y axis//we made it separate for 2 controllers
+        double strafe = gamepad1.left_stick_x;
+        double rotate = gamepad1.right_stick_x;
+        driveMecanum(drive, strafe, rotate);
 
-        if (gamepad1.startWasPressed()) {
-            aState = !aState;
+        // ==== Intake ====
+        intaking();
+
+        // ==== Shooter Controls ====
+        // Note: Make sure your gamepad buttons (squareWasPressed) are supported
+        // or use the standard boolean checks:
+        if (gamepad1.squareWasPressed()) {
+            shooter.setState(ShooterManualSubsystem.ShooterState.LOW);
+        } else if (gamepad1.triangleWasPressed()) {
+            shooter.setState(ShooterManualSubsystem.ShooterState.MEDIUM);
+        } else if (gamepad1.crossWasPressed()) {
+            shooter.setState(ShooterManualSubsystem
+                    .ShooterState.HIGH);
         }
 
-        shooterMode = aState ? ShooterMode.AUTO : ShooterMode.MANUAL;
-
-        if (shooterMode == ShooterMode.AUTO) {
-            automatic();
-        } else {
-            manual();
+        // ==== Indexer & Spindexer ====
+        if (gamepad1.circle && shooter.isAtTarget()) {
+            indexer.Index();
+            artifactsLoaded--;
         }
 
-        // --- Telemetry ---
-        telemetry.addData("X", robot.follower.getPose().getX());
-        telemetry.addData("Y", robot.follower.getPose().getY());
-        telemetry.addData("Heading", Math.toDegrees(robot.follower.getPose().getHeading()));
-        telemetry.addData("Current Pose", PoseStorage.currentPose);
-        telemetry.addData("Last Distance", robot.colorSensor.lastDistance);
-        telemetry.addData("Last Hue", robot.colorSensor.lastHue);
-        telemetry.addData("Calibrated", calibrated);
-        telemetry.addData("Shooter Target", robot.shooter.getTarget());
-        telemetry.addData("Shooter Velocity", robot.shooter.getVelocity());
-        telemetry.addData("Shooter Raw Vel", robot.shooter.getRawVelocity());
-        telemetry.addData("Artifacts Loaded", artifactsLoaded);
-        telemetry.addData("Spindexer Error", robot.spindexer.getError());
-        telemetry.addData("Mode", aState ? "AUTO" : "MANUAL");
-        telemetry.addData("Close Range", isCloseRange());
-        telemetry.addData("Shoot Sequence", autoState);
-        telemetry.update();
-    }
-
-    @Override
-    public void stop() {
-        robot.stop();
-    }
-
-    private boolean isCloseRange() {
-        return robot.follower.getPose().getY() > 80;
-    }
-
-    // ======================================================================
-    // DRIVING
-    // ======================================================================
-    private void Drive() {
-        robot.follower.setTeleOpDrive(
-                gamepad1.left_stick_y,
-                -gamepad1.left_stick_x,
-                -gamepad1.right_stick_x * 0.85,
-                true
-        );
-
-        if (gamepad1.leftBumperWasPressed() && gamepad1.rightBumperWasPressed()) {
-            Pose trianglePose = (robot.alliance == Alliance.Red)
-                    ? BLUE_TOP_TRIANGLE_POSE.mirror()
-                    : BLUE_TOP_TRIANGLE_POSE;
-            robot.follower.setPose(trianglePose);
-            calibrated = true;
-            gamepad1.rumbleBlips(2);
-        }
-    }
-
-    private void Intake() {
-        if (gamepad1.left_trigger > 0.05) {
-            robot.intake.spinOut();
-        } else if (gamepad1.right_trigger > 0.05) {
-            robot.intake.stop();
-        } else {
-            robot.intake.spinIn();
-        }
-
-        if (gamepad1.rightBumperWasPressed()) {
-            robot.spindexer.rotateCounterclockwise();
-        }
-
-
-         ColorSensor.DetectedColor color = robot.colorSensor.detectNewSample();
-         if (color != ColorSensor.DetectedColor.NONE) {
-             if (autoState == AutoShootState.IDLE && artifactsLoaded < 3) {
-                 robot.spindexer.rotateCounterclockwise();
-                 artifactsLoaded++;
-                 gamepad1.rumbleBlips(1);
-                 telemetry.addData("Loaded", color.toString());
-             }
-         }
-    }
-    private void automatic() {
-        boolean close = isCloseRange(); // FIX: was always false before
-
-        switch (autoState) {
-            case IDLE:
-                if (gamepad1.xWasPressed()) {
-                    robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);
-                    autoState = AutoShootState.SPINNING_UP;
-                    stateTimer.resetTimer();
-                    shootTimer.resetTimer();
-                }
-                break;
-
-            case SPINNING_UP:
-                robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);
-                if (robot.shooter.isAtVelocity() || shootTimer.getElapsedTimeSeconds() > 2.0) {
-                    if (stateTimer.getElapsedTime() > 250) {
-                        stateTimer.resetTimer();
-                        autoState = AutoShootState.READY;
-                    }
-                }
-                break;
-
-            case READY:
-                robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);
-                shotsFired = 0;
-                autoState = AutoShootState.SHOOTING;
-                break;
-
-            case SHOOTING:
-                robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);
-                indexerStarted = false;
-                robot.indexer.Index();
-                autoState = AutoShootState.WAITING_FOR_INDEX;
-                break;
-
-            case WAITING_FOR_INDEX:
-                robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);
-
-                if (!indexerStarted) {
-                    if (robot.indexer.currentState != Indexer.State.IDLE) {
-                        indexerStarted = true;
-                    }
-                    break;
-                }
-
-                if (robot.indexer.currentState == Indexer.State.IDLE) {
-                    shotsFired++;
-                    if (shotsFired >= 3) {
-                        autoState = AutoShootState.COMPLETE;
-                    } else {
-                        robot.spindexer.rotateCounterclockwise();
-                        autoState = AutoShootState.SPINNING;
-                    }
-                }
-                break;
-
-            case SPINNING:
-                // Keep shooter spinning while spindexer rotates
-                robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);
-                if (robot.spindexer.isAtTarget()) {
-                    autoState = AutoShootState.SHOOTING;
-                }
-                break;
-
-            case COMPLETE:
-                robot.shooter.off();
-                robot.indexer.disable();
-                indexerStarted = false;
-                shotsFired = 0;
-                autoState = AutoShootState.IDLE;
-                break;
-        }
-
-        // Emergency stop
-        if (gamepad1.bWasPressed()) {
-            robot.shooter.off();
-            robot.indexer.disable();
-            autoState = AutoShootState.IDLE;
-        }
-    }
-
-
-    private void manual() {
-        boolean close = isCloseRange();
-
-        if (gamepad1.xWasPressed()) {
-            robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);
-        }
-
-        if (gamepad1.bWasPressed()) {
-            robot.shooter.off();
-        }
-
-        if (gamepad1.circle) {
-            robot.indexer.Index();
-        }
-
-        if (robot.indexer.currentState == Indexer.State.IDLE) {
+        indexer.Update();
+        spindexer.update();
+        shooter.periodic();
+        // Manual Spindexer logic
+        if (indexer.currentState == Indexer.State.IDLE) {
             if (gamepad1.left_bumper) {
-                robot.spindexer.rotateCounterclockwise();
+                spindexer.rotateCounterclockwise();
             }
         }
+
+        telemetry.addData("X", follower.getPose().getX());
+        telemetry.addData("Y", follower.getPose().getY());
+        telemetry.addData("Shooter vel: ", shooter.getVelocity());
+        telemetry.addData("Shooter target vel: ", shooter.getTargetVelocity());
+        telemetry.addData("Is at shooter target: ", shooter.isAtTarget());
+        telemetry.update();
     }
 
     private void setShooter(double power) {
@@ -288,6 +124,55 @@ public class tele2 extends OpMode {
         } else {
             currentShooterPower = power;
         }
-        robot.shooter.setPower(currentShooterPower);
+    }
+
+    private void intaking(){
+        if (gamepad1.left_trigger > 0.05) {
+            intake.spinOut();
+        } else if (gamepad1.right_trigger > 0.05) {
+            intake.stop();
+        } else {
+            intake.spinIn();
+        }
+
+        ColorSensor.DetectedColor color = colorSensor.detectNewSample();
+        if (artifactsLoaded < 3) {
+            if (color != ColorSensor.DetectedColor.NONE) {
+                spindexer.rotateCounterclockwise();
+                artifactsLoaded++;
+            }
+        }
+    }
+
+    private void driveMecanum(double drive, double strafe, double rotate) {
+        // Pedro's setTeleOpDrive uses (forward, strafe, turn, useRobotCentric)
+        /*follower.setTeleOpDrive(
+                gamepad1.left_stick_y,
+                -gamepad1.left_stick_x,
+                -gamepad1.right_stick_x,
+                true
+        );*/
+        double frontLeftPower = drive + strafe + rotate;
+        double frontRightPower = drive - strafe - rotate;
+        double backLeftPower = drive - strafe + rotate;
+        double backRightPower = drive + strafe - rotate;
+
+        // Normalize powers to maintain ratio but not exceed 1.0
+        double maxPower = Math.max(Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower)),
+                Math.max(Math.abs(backLeftPower), Math.abs(backRightPower)));
+
+        if (maxPower > 1.0) {
+            frontLeftPower /= maxPower;
+            frontRightPower /= maxPower;
+            backLeftPower /= maxPower;
+            backRightPower /= maxPower;
+        }
+
+        // Set motor powers
+        frontLeft.setPower(frontLeftPower);
+        frontRight.setPower(frontRightPower);
+        backLeft.setPower(backLeftPower);
+        backRight.setPower(backRightPower);
+
     }
 }
