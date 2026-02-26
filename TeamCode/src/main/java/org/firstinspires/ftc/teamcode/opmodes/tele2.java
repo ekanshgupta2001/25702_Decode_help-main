@@ -128,10 +128,6 @@ public class tele2 extends OpMode {
         robot.stop();
     }
 
-    // ======================================================================
-    // HELPER: Determine if we're in close range based on Y position
-    // Centralized so both auto and manual use the same logic.
-    // ======================================================================
     private boolean isCloseRange() {
         return robot.follower.getPose().getY() > 80;
     }
@@ -157,9 +153,6 @@ public class tele2 extends OpMode {
         }
     }
 
-    // ======================================================================
-    // INTAKE — now uses the new color detection
-    // ======================================================================
     private void Intake() {
         if (gamepad1.left_trigger > 0.05) {
             robot.intake.spinOut();
@@ -173,26 +166,17 @@ public class tele2 extends OpMode {
             robot.spindexer.rotateCounterclockwise();
         }
 
-        // --- Auto-detect artifacts using actual color sensing ---
-        // Uncomment below when you're ready to use auto-intake:
-        //
-        // ColorSensor.DetectedColor color = robot.colorSensor.detectNewSample();
-        // if (color != ColorSensor.DetectedColor.NONE) {
-        //     if (autoState == AutoShootState.IDLE && artifactsLoaded < 3) {
-        //         robot.spindexer.rotateCounterclockwise();
-        //         artifactsLoaded++;
-        //         gamepad1.rumbleBlips(1);
-        //         telemetry.addData("Loaded", color.toString());
-        //     }
-        // }
-    }
 
-    // ======================================================================
-    // AUTOMATIC SHOOTING SEQUENCE
-    //
-    // FIX: Now uses isCloseRange() every loop so the interpolation table
-    // is actually used when close. Previously `close` was always false.
-    // ======================================================================
+         ColorSensor.DetectedColor color = robot.colorSensor.detectNewSample();
+         if (color != ColorSensor.DetectedColor.NONE) {
+             if (autoState == AutoShootState.IDLE && artifactsLoaded < 3) {
+                 robot.spindexer.rotateCounterclockwise();
+                 artifactsLoaded++;
+                 gamepad1.rumbleBlips(1);
+                 telemetry.addData("Loaded", color.toString());
+             }
+         }
+    }
     private void automatic() {
         boolean close = isCloseRange(); // FIX: was always false before
 
@@ -275,12 +259,7 @@ public class tele2 extends OpMode {
         }
     }
 
-    // ======================================================================
-    // MANUAL SHOOTING
-    //
-    // FIX: Uses isCloseRange() instead of a local variable that shadowed
-    // the class field.
-    // ======================================================================
+
     private void manual() {
         boolean close = isCloseRange();
 
