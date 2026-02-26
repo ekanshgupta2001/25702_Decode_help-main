@@ -33,10 +33,10 @@ public class ColorSensor {
     // and read the "Hue" telemetry value. Then set these ranges to
     // comfortably surround the values you see.
     // ======================================================================
-    private static final float GREEN_HUE_MIN = 80;
+    private static final float GREEN_HUE_MIN = 100;
     private static final float GREEN_HUE_MAX = 170;
-    private static final float PURPLE_HUE_MIN = 250;
-    private static final float PURPLE_HUE_MAX = 330;
+    private static final float PURPLE_HUE_MIN = 300;
+    private static final float PURPLE_HUE_MAX = 370;
 
     // Minimum saturation to consider a reading valid (filters out white/gray/black)
     private static final float MIN_SATURATION = 0.15f;
