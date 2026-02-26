@@ -7,7 +7,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Intake {
     DcMotor intake;
-    double intakePower = 0.50;
+    double intakePower = 0.60;
     public void Init(Telemetry tele, HardwareMap hardwareMap) {
         intake = hardwareMap.get(DcMotor.class, "intake");
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

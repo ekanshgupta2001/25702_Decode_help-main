@@ -163,7 +163,7 @@ public class tele2 extends OpMode {
     }
 
     private void automatic() {
-        close = robot.follower.getPose().getY() < 80;
+
 
         switch (autoState) {
             case IDLE:
@@ -251,7 +251,7 @@ public class tele2 extends OpMode {
     }
 
     private void manual(){
-        close = robot.follower.getPose().getY() < 80;
+        boolean close = robot.follower.getPose().getY() > 80;
 
         if (gamepad1.xWasPressed()){
             robot.shooter.forPose(robot.follower.getPose(), robot.getShootTarget(), close);

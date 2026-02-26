@@ -12,23 +12,23 @@ public class closePath {
 
     public Follower follower;
 
-    public Pose start = new Pose(21.913, 123, Math.toRadians(136));
-    public Pose scorefirst = new Pose(45, 84, Math.toRadians(136));
+    public Pose start = new Pose(21.913, 123, Math.toRadians(316));
+    public Pose scorefirst = new Pose(45, 84, Math.toRadians(316));
 
-    public Pose setFirstPick = new Pose(45, 84, Math.toRadians(180));
-    public Pose firstPick = new Pose(16.5, 84, Math.toRadians(180));
+    public Pose setFirstPick = new Pose(45, 84, Math.toRadians(0));
+    public Pose firstPick = new Pose(16.5, 84, Math.toRadians(0));
 
-    public Pose scoreSecond = new Pose(45, 100, Math.toRadians(136));
-    public Pose setSecondPick = new Pose(45, 60, Math.toRadians(180));
-    public Pose secondPick = new Pose(10, 60, Math.toRadians(180));
+    public Pose scoreSecond = new Pose(45, 100, Math.toRadians(316));
+    public Pose setSecondPick = new Pose(45, 60, Math.toRadians(0));
+    public Pose secondPick = new Pose(10, 60, Math.toRadians(0));
 
-    public Pose setThirdScore = new Pose(45, 60, Math.toRadians(136));
-    public Pose thirdScore = new Pose(45, 100, Math.toRadians(136));
+    public Pose setThirdScore = new Pose(45, 60, Math.toRadians(316));
+    public Pose thirdScore = new Pose(45, 100, Math.toRadians(316));
 
-    public Pose setThirdPick = new Pose(45, 36, Math.toRadians(180));
-    public Pose thirdPick = new Pose(10, 36, Math.toRadians(180));
+    public Pose setThirdPick = new Pose(45, 36, Math.toRadians(0));
+    public Pose thirdPick = new Pose(10, 36, Math.toRadians(0));
 
-    public Pose fourthScore = new Pose(45, 100, Math.toRadians(136));
+    public Pose fourthScore = new Pose(45, 100, Math.toRadians(316));
 
     private int index;
 

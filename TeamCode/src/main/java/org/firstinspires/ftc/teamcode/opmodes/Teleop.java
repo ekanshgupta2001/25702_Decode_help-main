@@ -8,19 +8,21 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants; // Ensure this points to your actual Constants file
 import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.ShooterManualSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 
 @TeleOp(name = "Teleop", group = "Drive")
 public class Teleop extends OpMode {
 
     private Follower follower;
-    private DcMotor shooter, spinner;
+    private DcMotor spinner;
     private DcMotor frontLeft, frontRight, backLeft, backRight;
 
     private final Spindexer spindexer = new Spindexer();
     private final Indexer indexer = new Indexer();
     private final Intake intake = new Intake();
-
+    private ShooterManualSubsystem shooter;
     private double currentShooterPower = 0.0;
 
     @Override
@@ -48,15 +50,13 @@ public class Teleop extends OpMode {
 
         // Initialize other hardware
         spinner = hardwareMap.get(DcMotor.class, "motor2");
-        shooter = hardwareMap.get(DcMotor.class, "shooter");
 
-        shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         // Subsystem Inits
         intake.Init(telemetry, hardwareMap);
         spindexer.init(hardwareMap, true);
         indexer.Init(hardwareMap, telemetry, spindexer);
+        shooter = new ShooterManualSubsystem(hardwareMap);
     }
 
     @Override
@@ -87,22 +87,23 @@ public class Teleop extends OpMode {
         // ==== Shooter Controls ====
         // Note: Make sure your gamepad buttons (squareWasPressed) are supported
         // or use the standard boolean checks:
-        if (gamepad1.square) {
-            setShooter(-0.69);
-        } else if (gamepad1.triangle) {
-            setShooter(-0.63);
-        } else if (gamepad1.cross) {
-            setShooter(-0.77);
+        if (gamepad1.squareWasPressed()) {
+            shooter.setState(ShooterManualSubsystem.ShooterState.LOW);
+        } else if (gamepad1.triangleWasPressed()) {
+            shooter.setState(ShooterManualSubsystem.ShooterState.MEDIUM);
+        } else if (gamepad1.crossWasPressed()) {
+            shooter.setState(ShooterManualSubsystem
+                    .ShooterState.HIGH);
         }
 
         // ==== Indexer & Spindexer ====
-        if (gamepad1.circle) {
+        if (gamepad1.circle && shooter.isAtTarget()) {
             indexer.Index();
         }
 
         indexer.Update();
         spindexer.update();
-
+        shooter.periodic();
         // Manual Spindexer logic
         if (indexer.currentState == Indexer.State.IDLE) {
             if (gamepad1.left_bumper) {
@@ -112,6 +113,9 @@ public class Teleop extends OpMode {
 
         telemetry.addData("X", follower.getPose().getX());
         telemetry.addData("Y", follower.getPose().getY());
+        telemetry.addData("Shooter vel: ", shooter.getVelocity());
+        telemetry.addData("Shooter target vel: ", shooter.getTargetVelocity());
+        telemetry.addData("Is at shooter target: ", shooter.isAtTarget());
         telemetry.update();
     }
 
@@ -121,7 +125,6 @@ public class Teleop extends OpMode {
         } else {
             currentShooterPower = power;
         }
-        shooter.setPower(currentShooterPower);
     }
 
     private void driveMecanum(double drive, double strafe, double rotate) {
