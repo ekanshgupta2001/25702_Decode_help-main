@@ -5,6 +5,7 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.subsystems.ColorSensor;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.util.PoseStorage;
@@ -138,8 +139,9 @@ public class redCloseAuto extends OpMode {
         telemetry.update();
     }
     public void intakeSequence(){
+        ColorSensor.DetectedColor color = r.colorSensor.detectNewSample();
         if (artifactsLoaded < 3) {
-            if (r.colorSensor.detectNewSample()) {
+            if (color != ColorSensor.DetectedColor.NONE) {
                 r.spindexer.rotateCounterclockwise();
                 artifactsLoaded++;
                 gamepad1.rumbleBlips(1);
