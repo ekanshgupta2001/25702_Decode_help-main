@@ -120,7 +120,7 @@ public class manualShooterSequence {
             case ROTATE_1:
                 // Use goToPos with priority to avoid silent failure
                 int nextPos1 = (spindexer.targetPositionIndex % 3) + 1;
-                spindexer.goToPos(nextPos1, true);
+                spindexer.goToPos(nextPos1, false);
                 state = State.WAIT_ROTATE_1;
                 timer.resetTimer();
                 break;
@@ -169,7 +169,7 @@ public class manualShooterSequence {
             // ==============================================================
             case ROTATE_2:
                 int nextPos2 = (spindexer.targetPositionIndex % 3) + 1;
-                spindexer.goToPos(nextPos2, true);
+                spindexer.goToPos(nextPos2, false);
                 state = State.WAIT_ROTATE_2;
                 timer.resetTimer();
                 break;
