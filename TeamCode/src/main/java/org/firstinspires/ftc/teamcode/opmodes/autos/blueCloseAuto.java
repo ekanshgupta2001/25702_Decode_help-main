@@ -139,13 +139,13 @@ public class blueCloseAuto extends OpMode {
         telemetry.update();
     }
     public void intakeSequence(){
-        ColorSensor.DetectedColor color = r.colorSensor.detectNewSample();
+        /*ColorSensor.DetectedColor color = r.colorSensor.detectNewSample();
         if (artifactsLoaded < 3) {
             if (color != ColorSensor.DetectedColor.NONE) {
                r.spindexer.rotateCounterclockwise();
                artifactsLoaded++;
             }
-        }
+        }*/
     }
 
     @Override

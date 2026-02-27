@@ -38,6 +38,7 @@ public class Robot {
     private static final Pose BLUE_SHOOT_TARGET = new Pose(10, 138, 0);
 
     public static Pose shootTarget = BLUE_SHOOT_TARGET;
+    boolean ya = false;
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, Alliance alliance, Spinner spinner) {
         this.alliance = alliance;
@@ -68,7 +69,7 @@ public class Robot {
         setShootTarget();
     }
 
-    /**
+       /**
      * Call this once per loop in your OpModes.
      * Updates localization, subsystems, and clears the hardware cache.
      */

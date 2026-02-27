@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.opmodes.scrap.RobotTimer;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants; // Ensure this points to your actual Constants file
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensor;
 import org.firstinspires.ftc.teamcode.subsystems.Indexer;
@@ -27,6 +28,7 @@ public class tele2 extends OpMode {
     private ShooterManualSubsystem shooter;
     private double currentShooterPower = 0.0;
     private double artifactsLoaded = 0;
+    public RobotTimer colorCooldown = new RobotTimer(1500);
 
     @Override
     public void init() {
@@ -97,6 +99,7 @@ public class tele2 extends OpMode {
         // ==== Indexer & Spindexer ====
         if (gamepad1.circle && shooter.isAtTarget()) {
             indexer.Index();
+            colorCooldown.start();
             artifactsLoaded--;
         }
 
@@ -109,6 +112,10 @@ public class tele2 extends OpMode {
             if (gamepad1.left_bumper) {
                 spindexer.rotateCounterclockwise();
             }
+        }
+
+        if (gamepad1.dpadDownWasPressed()) { // reset artifact count (intake ball out)
+            artifactsLoaded = 0;
         }
 
         telemetry.addData("X", follower.getPose().getX());
@@ -135,10 +142,10 @@ public class tele2 extends OpMode {
         } else {
             intake.spinIn();
         }
-
-        ColorSensor.DetectedColor color = colorSensor.detectNewSample();
+        if (!colorCooldown.IsDone()) { return; }
+        boolean foundBall = colorSensor.detectNewSample();
         if (artifactsLoaded < 3) {
-            if (color != ColorSensor.DetectedColor.NONE) {
+            if (foundBall) {
                 spindexer.rotateCounterclockwise();
                 artifactsLoaded++;
             }

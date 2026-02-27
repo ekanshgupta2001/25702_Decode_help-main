@@ -23,7 +23,7 @@ public class ColorSensor {
     private int consecutiveDetections = 0;
     private DetectedColor lastDetectedColor = DetectedColor.NONE;
 
-    private final double DETECTION_DISTANCE_CM = 5.5;
+    private final double DETECTION_DISTANCE_CM = 4.9;
     public double lastDistance;
     public float lastHue = 0;
 
@@ -59,7 +59,7 @@ public class ColorSensor {
      * continuously detected for the required sample count.
      * Returns DetectedColor.NONE otherwise.
      */
-    public DetectedColor detectNewSample() {
+    public boolean detectNewSample() {
         double distance = distanceSensor.getDistance(DistanceUnit.CM);
         lastDistance = distance;
 
@@ -67,8 +67,8 @@ public class ColorSensor {
 
         if (distance <= DETECTION_DISTANCE_CM) {
             // --- ACTUALLY READ THE COLOR ---
-            NormalizedRGBA colors = colorSensor.getNormalizedColors();
-
+            //NormalizedRGBA colors = colorSensor.getNormalizedColors();
+/*
             // Convert RGBA to HSV
             float[] hsv = new float[3];
             Color.colorToHSV(colors.toColor(), hsv);
@@ -89,15 +89,9 @@ public class ColorSensor {
             DetectedColor currentColor = classifyColor(hue, saturation);
 
             telemetry.addData("Color Detected", currentColor);
-
+*/
             // Build confidence: same color detected multiple times in a row
-            if (currentColor != DetectedColor.NONE && currentColor == lastDetectedColor) {
-                consecutiveDetections++;
-            } else {
-                // Reset if color changed or nothing detected
-                consecutiveDetections = (currentColor != DetectedColor.NONE) ? 1 : 0;
-                lastDetectedColor = currentColor;
-            }
+            consecutiveDetections++;
         } else {
             consecutiveDetections = 0;
             lastDetectedColor = DetectedColor.NONE;
@@ -108,12 +102,12 @@ public class ColorSensor {
 
         // Trigger exactly once when confidence is met
         if (consecutiveDetections >= SAMPLE_SIZE) {
-            DetectedColor result = lastDetectedColor;
+            //DetectedColor result = lastDetectedColor;
             consecutiveDetections = 0; // Reset so it can trigger again for a new sample
-            return result;
+            return true;
         }
 
-        return DetectedColor.NONE;
+        return false;
     }
 
     /**
