@@ -111,6 +111,10 @@ public class Spindexer {
         lastError = error;
     }
 
+    public void reset(){
+        targetPosTicks = 0;
+    }
+
     /**
      * Moves to a specific slot (1, 2, or 3) always spinning forward.
      */

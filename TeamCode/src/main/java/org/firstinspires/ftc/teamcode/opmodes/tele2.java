@@ -60,14 +60,14 @@ public class tele2 extends OpMode {
         // Subsystem Inits
         colorSensor.init(hardwareMap, telemetry);
         intake.Init(telemetry, hardwareMap);
-        spindexer.init(hardwareMap, true);
+        spindexer.init(hardwareMap, false);
         indexer.Init(hardwareMap, telemetry, spindexer);
         shooter = new ShooterManualSubsystem(hardwareMap);
     }
 
     @Override
     public void start() {
-
+        spindexer.reset();
     }
 
     @Override
