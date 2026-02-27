@@ -62,15 +62,16 @@ public class farTumPath {
             .build();
     }
     public PathChain pickOne() {
+        follower.setMaxPower(0.5);
         return follower.pathBuilder()
                 .addPath(new BezierLine(setFirstPick, firstPick))
                 .setReversed()
-                .setBrakingStrength(.75)
                 .setLinearHeadingInterpolation(setFirstPick.getHeading(), firstPick.getHeading())
                 .build();
     }
 
     public PathChain scoreTwo() {
+        follower.setMaxPower(1.0);
         return follower.pathBuilder()
                 .addPath(new BezierLine(firstPick, scoreSecond))
                 .setReversed()
