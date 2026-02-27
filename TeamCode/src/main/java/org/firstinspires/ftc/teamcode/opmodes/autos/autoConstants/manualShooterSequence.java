@@ -4,34 +4,54 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterManualSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
-
 public class manualShooterSequence {
 
     private enum State {
         IDLE,
-        SpinningUp,
-        Shoot1,
-        Spindex1,
-        Shoot2,
-        Spindex2,
-        Shoot3,
-        Complete
+        SPINNING_UP,
+
+        FIRE_1,
+        WAIT_SHOT_1,
+
+        ROTATE_1,
+        WAIT_ROTATE_1,
+
+        FIRE_2,
+        WAIT_SHOT_2,
+
+        ROTATE_2,
+        WAIT_ROTATE_2,
+
+        FIRE_3,
+        WAIT_SHOT_3,
+
+        COMPLETE
     }
 
     private final Timer timer = new Timer();
     private State state = State.IDLE;
+
     public ShooterManualSubsystem shooterSubsystem;
     private Indexer indexer;
     private Spindexer spindexer;
 
-    // Track whether the spindexer command was actually accepted
-    private boolean spindexerCommandSent = false;
+    // How long to wait for the shooter to spin up before firing anyway
+    private static final double SPINUP_TIMEOUT_SEC = 3.0;
 
-    public manualShooterSequence(HardwareMap hardwareMap, Telemetry telemetry, Spindexer spindexer, Indexer indexer) {
+    // How long to wait for the indexer to complete a shot before moving on
+    private static final double SHOT_TIMEOUT_SEC = 1.0;
+
+    // How long to wait for the spindexer to rotate before moving on
+    private static final double ROTATE_TIMEOUT_SEC = 1.5;
+
+    // Minimum time after rotation before firing (let things settle)
+    private static final double SETTLE_TIME_SEC = 0.3;
+
+    public manualShooterSequence(HardwareMap hardwareMap, Telemetry telemetry,
+                                 Spindexer spindexer, Indexer indexer) {
         this.indexer = indexer;
         this.spindexer = spindexer;
         shooterSubsystem = new ShooterManualSubsystem(hardwareMap);
@@ -39,105 +59,177 @@ public class manualShooterSequence {
 
     public void start() {
         shooterSubsystem.setState(ShooterManualSubsystem.ShooterState.AUTOHIGH);
-        state = State.SpinningUp;
-        spindexerCommandSent = false;
+        state = State.SPINNING_UP;
         timer.resetTimer();
     }
 
-    /**
-     * IMPORTANT: Your auto OpMode MUST call robot.periodic() every loop
-     * BEFORE calling this update(). Without that, the spindexer PID
-     * (spindexer.update()) never runs and the motor never moves.
-     *
-     * Example in your auto OpMode loop:
-     *     robot.periodic();           // Updates spindexer PID, follower, etc.
-     *     shooterSequence.update();   // Runs this state machine
-     */
     public void update() {
-        // Keep updating shooter target based on current position
+        // Always run the shooter PID
         shooterSubsystem.periodic();
+
         switch (state) {
             case IDLE:
                 break;
 
-            case SpinningUp:
-                // Keep adjusting target while spinning up
-
-                if (shooterSubsystem.isAtTarget() && timer.getElapsedTimeSeconds() > 2.5) {
+            // ==============================================================
+            // SPIN UP
+            // ==============================================================
+            case SPINNING_UP:
+                if (shooterSubsystem.isAtTarget() || timer.getElapsedTimeSeconds() > SPINUP_TIMEOUT_SEC) {
+                    // Shooter is at speed (or we timed out) — fire first shot
                     indexer.enable();
                     indexer.Index();
-                    state = State.Shoot1;
+                    state = State.FIRE_1;
                     timer.resetTimer();
                 }
                 break;
 
-            case Shoot1:
+            // ==============================================================
+            // SHOT 1
+            // ==============================================================
+            case FIRE_1:
+                // Wait a tiny bit for the indexer to start moving
+                if (indexer.currentState != Indexer.State.IDLE) {
+                    state = State.WAIT_SHOT_1;
+                    timer.resetTimer();
+                }
+                // Timeout in case indexer never leaves IDLE
+                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC) {
+                    state = State.ROTATE_1;
+                    timer.resetTimer();
+                }
+                break;
+
+            case WAIT_SHOT_1:
+                // Wait for indexer to finish the shot
                 if (indexer.currentState == Indexer.State.IDLE) {
                     indexer.disable();
-                    spindexerCommandSent = false;
-                    state = State.Spindex1;
+                    state = State.ROTATE_1;
+                    timer.resetTimer();
+                }
+                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC) {
+                    indexer.disable();
+                    state = State.ROTATE_1;
                     timer.resetTimer();
                 }
                 break;
 
-            case Spindex1:
-                // RETRY the rotation command until it's actually accepted.
-                // rotateCounterclockwise() silently fails if !isAtTarget()
-                // or if the moveTimer hasn't elapsed, so we keep trying.
-                if (timer.getElapsedTimeSeconds() > 1.5) {
-                    spindexer.rotateCounterclockwise(true);
-                    state = State.Shoot2;
-                    timer.resetTimer();
-                }
-
+            // ==============================================================
+            // ROTATE TO SLOT 2
+            // ==============================================================
+            case ROTATE_1:
+                // Use goToPos with priority to avoid silent failure
+                int nextPos1 = (spindexer.targetPositionIndex % 3) + 1;
+                spindexer.goToPos(nextPos1, true);
+                state = State.WAIT_ROTATE_1;
+                timer.resetTimer();
                 break;
 
-            case Shoot2:
-                if (indexer.currentState == Indexer.State.IDLE && spindexer.isAtTarget() && timer.getElapsedTimeSeconds() > 1.5) {
-                    indexer.enable();
-                    indexer.Index();
-                    spindexerCommandSent = false;
-                    state = State.Spindex2;
-                    timer.resetTimer();
-                }
-                break;
-
-            case Spindex2:
-                // Same retry logic as Spindex1
-               if (timer.getElapsedTimeSeconds() > 1.5) {
-                   indexer.disable();
-                   spindexer.rotateCounterclockwise(true);
-                   state = State.Shoot3;
-                   timer.resetTimer();
-               }
-
-                break;
-
-            case Shoot3:
-                if (indexer.currentState == Indexer.State.IDLE && timer.getElapsedTimeSeconds() > 1.5) {
-                    indexer.enable();
-                    indexer.Index();
-                    timer.resetTimer();
-                    state = State.Complete;
+            case WAIT_ROTATE_1:
+                if (spindexer.isAtTarget() || timer.getElapsedTimeSeconds() > ROTATE_TIMEOUT_SEC) {
+                    // Small settle time before next shot
+                    if (timer.getElapsedTimeSeconds() > SETTLE_TIME_SEC) {
+                        indexer.enable();
+                        indexer.Index();
+                        state = State.FIRE_2;
+                        timer.resetTimer();
+                    }
                 }
                 break;
 
-            case Complete:
+            // ==============================================================
+            // SHOT 2
+            // ==============================================================
+            case FIRE_2:
+                if (indexer.currentState != Indexer.State.IDLE) {
+                    state = State.WAIT_SHOT_2;
+                    timer.resetTimer();
+                }
+                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC) {
+                    state = State.ROTATE_2;
+                    timer.resetTimer();
+                }
+                break;
+
+            case WAIT_SHOT_2:
+                if (indexer.currentState == Indexer.State.IDLE) {
+                    indexer.disable();
+                    state = State.ROTATE_2;
+                    timer.resetTimer();
+                }
+                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC) {
+                    indexer.disable();
+                    state = State.ROTATE_2;
+                    timer.resetTimer();
+                }
+                break;
+
+            // ==============================================================
+            // ROTATE TO SLOT 3
+            // ==============================================================
+            case ROTATE_2:
+                int nextPos2 = (spindexer.targetPositionIndex % 3) + 1;
+                spindexer.goToPos(nextPos2, true);
+                state = State.WAIT_ROTATE_2;
+                timer.resetTimer();
+                break;
+
+            case WAIT_ROTATE_2:
+                if (spindexer.isAtTarget() || timer.getElapsedTimeSeconds() > ROTATE_TIMEOUT_SEC) {
+                    if (timer.getElapsedTimeSeconds() > SETTLE_TIME_SEC) {
+                        indexer.enable();
+                        indexer.Index();
+                        state = State.FIRE_3;
+                        timer.resetTimer();
+                    }
+                }
+                break;
+
+            // ==============================================================
+            // SHOT 3
+            // ==============================================================
+            case FIRE_3:
+                if (indexer.currentState != Indexer.State.IDLE) {
+                    state = State.WAIT_SHOT_3;
+                    timer.resetTimer();
+                }
+                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC) {
+                    state = State.COMPLETE;
+                }
+                break;
+
+            case WAIT_SHOT_3:
+                if (indexer.currentState == Indexer.State.IDLE) {
+                    state = State.COMPLETE;
+                }
+                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC) {
+                    state = State.COMPLETE;
+                }
+                break;
+
+            // ==============================================================
+            // DONE
+            // ==============================================================
+            case COMPLETE:
+                shooterSubsystem.off();
                 indexer.disable();
                 break;
         }
     }
 
     public boolean isRunning() {
-        return state != State.IDLE && state != State.Complete;
+        return state != State.IDLE && state != State.COMPLETE;
     }
 
     public boolean isDone() {
-        return state == State.Complete;
+        return state == State.COMPLETE;
+    }
+
+    public State getState() {
+        return state;
     }
 
     public void resetToIdle() {
         state = State.IDLE;
-        spindexerCommandSent = false;
     }
 }

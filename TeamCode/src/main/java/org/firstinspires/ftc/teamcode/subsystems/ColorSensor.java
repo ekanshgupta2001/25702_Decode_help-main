@@ -14,108 +14,77 @@ public class ColorSensor {
 
     public enum DetectedColor { NONE, GREEN, PURPLE }
 
-    // The REV Color Sensor V3 implements BOTH of these interfaces
     private NormalizedColorSensor colorSensor;
     private DistanceSensor distanceSensor;
     private Telemetry telemetry;
 
-    private final int SAMPLE_SIZE = 8;
-    private int consecutiveDetections = 0;
-    private DetectedColor lastDetectedColor = DetectedColor.NONE;
-
-    private final double DETECTION_DISTANCE_CM = 4.9;
+    private final double DETECTION_DISTANCE_CM = 5.9;
     public double lastDistance;
     public float lastHue = 0;
+    public DetectedColor lastColor = DetectedColor.NONE;
 
     // ======================================================================
-    // HUE RANGES — CALIBRATE THESE WITH YOUR ACTUAL ARTIFACTS!
-    // Run the robot, hold each color artifact in front of the sensor,
-    // and read the "Hue" telemetry value. Then set these ranges to
-    // comfortably surround the values you see.
+    // HUE RANGES (0-360 scale)
     // ======================================================================
-    private static final float GREEN_HUE_MIN = 100;
+    private static final float GREEN_HUE_MIN = 80;
     private static final float GREEN_HUE_MAX = 170;
-    private static final float PURPLE_HUE_MIN = 300;
-    private static final float PURPLE_HUE_MAX = 370;
+    private static final float PURPLE_HUE_MIN = 260;
+    private static final float PURPLE_HUE_MAX = 340;
 
-    // Minimum saturation to consider a reading valid (filters out white/gray/black)
-    private static final float MIN_SATURATION = 0.15f;
+    // Lowered slightly for testing; adjust back to 0.12 if you get false positives
+    private static final float MIN_SATURATION = 0.10f;
 
     public void init(HardwareMap hardwareMap, Telemetry tele) {
         this.telemetry = tele;
 
-        // Grab BOTH interfaces from the same physical device
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "colour_sensor");
         distanceSensor = hardwareMap.get(DistanceSensor.class, "colour_sensor");
 
-        // Set the sensor gain higher for better color readings at close range
-        // Increase this if saturation is too low, decrease if values are clipping
+        // 2.0f is a good starting gain, but if colors wash out (white light), lower it to 1.5f
         colorSensor.setGain(2.0f);
     }
 
-    /**
-     * Call this inside your loop.
-     * Returns the detected color ONLY when an object has been
-     * continuously detected for the required sample count.
-     * Returns DetectedColor.NONE otherwise.
-     */
-    public boolean detectNewSample() {
+    public DetectedColor detectColor() {
         double distance = distanceSensor.getDistance(DistanceUnit.CM);
         lastDistance = distance;
+
+        // Sometimes out-of-range sensors return Double.NaN (Not a Number)
+        if (Double.isNaN(distance)) {
+            distance = 999.0;
+        }
 
         telemetry.addData("Raw Distance (cm)", "%.2f", distance);
 
         if (distance <= DETECTION_DISTANCE_CM) {
-            // --- ACTUALLY READ THE COLOR ---
-            //NormalizedRGBA colors = colorSensor.getNormalizedColors();
-/*
-            // Convert RGBA to HSV
+            // --- READ THE COLOR ---
+            NormalizedRGBA colors = colorSensor.getNormalizedColors();
+
             float[] hsv = new float[3];
             Color.colorToHSV(colors.toColor(), hsv);
 
-            float hue = hsv[0];         // 0-360
-            float saturation = hsv[1];  // 0-1
-            float value = hsv[2];       // 0-1
+            float hue = hsv[0];
+            float saturation = hsv[1];
+            float value = hsv[2];
             lastHue = hue;
 
+            // Always show in telemetry for calibration
             telemetry.addData("Hue", "%.1f", hue);
             telemetry.addData("Saturation", "%.2f", saturation);
-            telemetry.addData("Value", "%.2f", value);
-            telemetry.addData("R", "%.3f", colors.red);
-            telemetry.addData("G", "%.3f", colors.green);
-            telemetry.addData("B", "%.3f", colors.blue);
+            telemetry.addData("Value (brightness)", "%.2f", value);
 
-            // Classify the color based on hue
             DetectedColor currentColor = classifyColor(hue, saturation);
+            telemetry.addData("Classified As", currentColor);
+            lastColor = currentColor;
 
-            telemetry.addData("Color Detected", currentColor);
-*/
-            // Build confidence: same color detected multiple times in a row
-            consecutiveDetections++;
+            return currentColor;
         } else {
-            consecutiveDetections = 0;
-            lastDetectedColor = DetectedColor.NONE;
-            telemetry.addData("Status", "Waiting for sample (Too far)");
+            telemetry.addData("Status", "Too far");
+            lastColor = DetectedColor.NONE;
+            return DetectedColor.NONE;
         }
-
-        telemetry.addData("Confidence", consecutiveDetections + "/" + SAMPLE_SIZE);
-
-        // Trigger exactly once when confidence is met
-        if (consecutiveDetections >= SAMPLE_SIZE) {
-            //DetectedColor result = lastDetectedColor;
-            consecutiveDetections = 0; // Reset so it can trigger again for a new sample
-            return true;
-        }
-
-        return false;
     }
 
-    /**
-     * Classifies a hue value into GREEN, PURPLE, or NONE.
-     * Requires minimum saturation to avoid false positives on white/gray objects.
-     */
     private DetectedColor classifyColor(float hue, float saturation) {
-        // Low saturation = gray/white/black, not a real color
         if (saturation < MIN_SATURATION) return DetectedColor.NONE;
 
         if (hue >= GREEN_HUE_MIN && hue <= GREEN_HUE_MAX) return DetectedColor.GREEN;
@@ -124,12 +93,9 @@ public class ColorSensor {
         return DetectedColor.NONE;
     }
 
-    /**
-     * Simple distance-only check (useful if you just need proximity without color).
-     */
     public boolean isSamplePresent() {
         double distance = distanceSensor.getDistance(DistanceUnit.CM);
-        lastDistance = distance;
+        if (Double.isNaN(distance)) return false;
         return distance <= DETECTION_DISTANCE_CM;
     }
 }

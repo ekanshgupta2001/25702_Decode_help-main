@@ -5,13 +5,13 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.subsystems.ColorSensor;
-import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.Robot;
-import org.firstinspires.ftc.teamcode.util.PoseStorage;
-import org.firstinspires.ftc.teamcode.util.Spinner;
 import org.firstinspires.ftc.teamcode.opmodes.autos.autoConstants.autoShooterSequence;
 import org.firstinspires.ftc.teamcode.opmodes.autos.autoConstants.closePath;
+import org.firstinspires.ftc.teamcode.subsystems.ColorSensor;
+import org.firstinspires.ftc.teamcode.util.Alliance;
+import org.firstinspires.ftc.teamcode.util.PoseStorage;
+import org.firstinspires.ftc.teamcode.util.Spinner;
 
 @Autonomous
 public class blueCloseAuto extends OpMode {
@@ -139,13 +139,13 @@ public class blueCloseAuto extends OpMode {
         telemetry.update();
     }
     public void intakeSequence(){
-        /*ColorSensor.DetectedColor color = r.colorSensor.detectNewSample();
+        ColorSensor.DetectedColor color = r.colorSensor.detectColor();
         if (artifactsLoaded < 3) {
             if (color != ColorSensor.DetectedColor.NONE) {
-               r.spindexer.rotateCounterclockwise();
-               artifactsLoaded++;
+                r.spindexer.rotateCounterclockwise();
+                artifactsLoaded++;
             }
-        }*/
+        }
     }
 
     @Override
