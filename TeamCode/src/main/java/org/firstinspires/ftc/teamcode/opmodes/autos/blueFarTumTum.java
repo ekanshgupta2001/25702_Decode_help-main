@@ -83,19 +83,39 @@ public class blueFarTumTum extends OpMode {
                 artifactsLoaded = 0;
                 intake.spinIn();
                 shooterSeq.start();
-                pathState = 6;
+                pathState = 1;
                 break;
 
             case 1:
                 if (shooterSeq.isDone()) {
                     shooterSeq.resetToIdle();
-
+                    pathTimer.resetTimer();
                     intake.spinIn();
-                    pathState = 5;
+                    pathState = 2;
                 }
                 break;
-
             case 2:
+                if (pathTimer.getElapsedTimeSeconds() > 2) {
+                    follower.followPath(paths.goToPickOne());
+                    pathTimer.resetTimer();
+                    pathState = 3;
+                }
+                break;
+            case 3:
+                if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 4) {
+                    follower.followPath(paths.pickOne());
+                    pathTimer.resetTimer();
+                    pathState = 4;
+                }
+                break;
+            case 4:
+                if (!follower.isBusy()) {
+                    spindexer.rotateCounterclockwise(true);
+                    pathTimer.resetTimer();
+                    pathState = 9;
+                }
+                break;
+            case 5:
                 intake.spinIn();
                 intakeSequence();
                 if (!follower.isBusy()) {
@@ -106,7 +126,7 @@ public class blueFarTumTum extends OpMode {
                 }
                 break;
 
-            case 3:
+            case 6:
                 if (!follower.isBusy() && shooterSeq.isDone()) {
                     shooterSeq.resetToIdle();
                     intake.spinIn();
@@ -115,7 +135,7 @@ public class blueFarTumTum extends OpMode {
                 }
                 break;
 
-            case 4:
+            case 7:
                 intake.spinIn();
                 intakeSequence();
                 if (!follower.isBusy()) {
@@ -126,15 +146,15 @@ public class blueFarTumTum extends OpMode {
                 }
                 break;
 
-            case 5:
+            case 8:
                 if (!follower.isBusy()) {
                     follower.followPath(paths.parkPath(), true);
                     pathState = 6;
                 }
                 break;
 
-            case 6:
-                if (!follower.isBusy() && shooterSeq.isDone()) {
+            case 9:
+                if (!follower.isBusy() && shooterSeq.isDone() && pathTimer.getElapsedTimeSeconds() > 1) {
                     shooterSeq.resetToIdle();
                     intake.stop();
                     pathState = -1;
@@ -147,10 +167,11 @@ public class blueFarTumTum extends OpMode {
         telemetry.addData("Shooter Done", shooterSeq.isDone());
         telemetry.addData("X", follower.getPose().getX());
         telemetry.addData("Y", follower.getPose().getY());
+        telemetry.addData("Shooter velocity: ", shooterSeq.shooterSubsystem.getVelocity());
         telemetry.update();
     }
     public void intakeSequence(){
-        /*ColorSensor.DetectedColor color = r.colorSensor.detectNewSample();
+        /*boolean color = colorSensor.detectNewSample();
         if (artifactsLoaded < 3) {
             if (color != ColorSensor.DetectedColor.NONE) {
                 r.spindexer.rotateCounterclockwise();
@@ -159,6 +180,8 @@ public class blueFarTumTum extends OpMode {
             }
         }
         */
+
+
 
     }
 

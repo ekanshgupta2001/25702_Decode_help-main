@@ -24,7 +24,7 @@ public class manualShooterSequence {
 
     private final Timer timer = new Timer();
     private State state = State.IDLE;
-    private ShooterManualSubsystem shooterSubsystem;
+    public ShooterManualSubsystem shooterSubsystem;
     private Indexer indexer;
     private Spindexer spindexer;
 
@@ -38,7 +38,7 @@ public class manualShooterSequence {
     }
 
     public void start() {
-        shooterSubsystem.setState(ShooterManualSubsystem.ShooterState.HIGH);
+        shooterSubsystem.setState(ShooterManualSubsystem.ShooterState.AUTOHIGH);
         state = State.SpinningUp;
         spindexerCommandSent = false;
         timer.resetTimer();
@@ -84,7 +84,7 @@ public class manualShooterSequence {
                 // RETRY the rotation command until it's actually accepted.
                 // rotateCounterclockwise() silently fails if !isAtTarget()
                 // or if the moveTimer hasn't elapsed, so we keep trying.
-                if (timer.getElapsedTimeSeconds() > 1) {
+                if (timer.getElapsedTimeSeconds() > 1.5) {
                     spindexer.rotateCounterclockwise(true);
                     state = State.Shoot2;
                     timer.resetTimer();
@@ -93,7 +93,7 @@ public class manualShooterSequence {
                 break;
 
             case Shoot2:
-                if (indexer.currentState == Indexer.State.IDLE && spindexer.isAtTarget()) {
+                if (indexer.currentState == Indexer.State.IDLE && spindexer.isAtTarget() && timer.getElapsedTimeSeconds() > 1.5) {
                     indexer.enable();
                     indexer.Index();
                     spindexerCommandSent = false;
@@ -104,7 +104,8 @@ public class manualShooterSequence {
 
             case Spindex2:
                 // Same retry logic as Spindex1
-               if (timer.getElapsedTimeSeconds() > 1) {
+               if (timer.getElapsedTimeSeconds() > 1.5) {
+                   indexer.disable();
                    spindexer.rotateCounterclockwise(true);
                    state = State.Shoot3;
                    timer.resetTimer();
@@ -113,14 +114,16 @@ public class manualShooterSequence {
                 break;
 
             case Shoot3:
-                if (indexer.currentState == Indexer.State.IDLE) {
-                    shooterSubsystem.setState(ShooterManualSubsystem.ShooterState.OFF);
-                    indexer.disable();
+                if (indexer.currentState == Indexer.State.IDLE && timer.getElapsedTimeSeconds() > 1.5) {
+                    indexer.enable();
+                    indexer.Index();
+                    timer.resetTimer();
                     state = State.Complete;
                 }
                 break;
 
             case Complete:
+                indexer.disable();
                 break;
         }
     }

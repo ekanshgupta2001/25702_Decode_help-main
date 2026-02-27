@@ -14,8 +14,8 @@ public class farTumPath {
     public Pose start = new Pose(56, 8, Math.toRadians(288));
     public Pose scoreFirst = new Pose(56, 15, Math.toRadians(288));
 
-    public Pose setFirstPick = new Pose(40, 36, Math.toRadians(0));
-    public Pose firstPick = new Pose(6, 36, Math.toRadians(0));
+    public Pose setFirstPick = new Pose(51.62162162162162, 24.783783783783782, Math.toRadians(360));
+    public Pose firstPick = new Pose(32.027027027027046, 24.783783783783782, Math.toRadians(360));
 
     public Pose scoreSecond = new Pose(56, 15, Math.toRadians(288));
 
@@ -54,13 +54,19 @@ public class farTumPath {
                 .setLinearHeadingInterpolation(start.getHeading(), scoreFirst.getHeading())
                 .build();
     }
-
+    public PathChain goToPickOne() {
+        return follower.pathBuilder()
+            .addPath(new BezierLine(start, setFirstPick))
+            .setReversed()
+            .setLinearHeadingInterpolation(start.getHeading(), setFirstPick.getHeading())
+            .build();
+    }
     public PathChain pickOne() {
         return follower.pathBuilder()
-                .addPath(new BezierCurve(scoreFirst, setFirstPick, firstPick))
+                .addPath(new BezierLine(setFirstPick, firstPick))
                 .setReversed()
                 .setBrakingStrength(.75)
-                .setLinearHeadingInterpolation(scoreFirst.getHeading(), firstPick.getHeading())
+                .setLinearHeadingInterpolation(setFirstPick.getHeading(), firstPick.getHeading())
                 .build();
     }
 
