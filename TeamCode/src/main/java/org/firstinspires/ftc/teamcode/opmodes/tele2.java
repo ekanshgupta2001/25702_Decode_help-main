@@ -142,14 +142,14 @@ public class tele2 extends OpMode {
         } else {
             intake.spinIn();
         }
-        if (!colorCooldown.IsDone()) { return; }
-        boolean foundBall = colorSensor.detectNewSample();
-        if (artifactsLoaded < 3) {
-            if (foundBall) {
-                spindexer.rotateCounterclockwise();
-                artifactsLoaded++;
-            }
-        }
+//        if (!colorCooldown.IsDone()) { return; }
+//        boolean foundBall = colorSensor.detectColor();
+//        if (artifactsLoaded < 3) {
+//            if (foundBall) {
+//                spindexer.rotateCounterclockwise();
+//                artifactsLoaded++;
+//            }
+//        }
     }
 
     private void driveMecanum(double drive, double strafe, double rotate) {
