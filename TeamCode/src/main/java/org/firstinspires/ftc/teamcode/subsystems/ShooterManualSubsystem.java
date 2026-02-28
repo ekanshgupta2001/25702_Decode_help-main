@@ -89,4 +89,6 @@ public class ShooterManualSubsystem {
         // Safety: Clip power between 0 and 1 (assuming shooting in one direction)
         motor.setPower(Range.clip(power, 0, 1));
     }
+
+    public ShooterState getCurrentState() { return currentState; }
 }

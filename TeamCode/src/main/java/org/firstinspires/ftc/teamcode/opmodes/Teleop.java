@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.opmodes.autos.autoConstants.manualShooterSequence;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants; // Ensure this points to your actual Constants file
 import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
@@ -22,7 +23,9 @@ public class Teleop extends OpMode {
     private final Spindexer spindexer = new Spindexer();
     private final Indexer indexer = new Indexer();
     private final Intake intake = new Intake();
+    private boolean fastShooting = false;
     private ShooterManualSubsystem shooter;
+    private manualShooterSequence shooterSeq;
     private double currentShooterPower = 0.0;
 
     @Override
@@ -56,7 +59,10 @@ public class Teleop extends OpMode {
         intake.Init(telemetry, hardwareMap);
         spindexer.init(hardwareMap, true);
         indexer.Init(hardwareMap, telemetry, spindexer);
-        shooter = new ShooterManualSubsystem(hardwareMap);
+
+        shooterSeq = new manualShooterSequence(hardwareMap, telemetry, spindexer, indexer);
+        shooter = shooterSeq.shooterSubsystem;
+        shooterSeq.setDECREASE(0.8); // all wait times are 20% less
     }
 
     @Override
@@ -95,7 +101,13 @@ public class Teleop extends OpMode {
             shooter.setState(ShooterManualSubsystem
                     .ShooterState.HIGH);
         }
-
+        if (gamepad1.dpadDownWasPressed()) {
+            fastShoot();
+        }
+        if (fastShooting && shooterSeq.isDone()) {
+            indexer.enable();
+            fastShooting = false;
+        }
         // ==== Indexer & Spindexer ====
         if (gamepad1.circle && shooter.isAtTarget()) {
             indexer.Index();
@@ -110,6 +122,7 @@ public class Teleop extends OpMode {
                 spindexer.rotateCounterclockwise();
             }
         }
+
 
         telemetry.addData("X", follower.getPose().getX());
         telemetry.addData("Y", follower.getPose().getY());
@@ -157,5 +170,13 @@ public class Teleop extends OpMode {
         backLeft.setPower(backLeftPower);
         backRight.setPower(backRightPower);
 
+    }
+
+    public void fastShoot() {
+        if (fastShooting) {
+            return;
+        }
+        fastShooting = true;
+        shooterSeq.start(shooter.getCurrentState());
     }
 }

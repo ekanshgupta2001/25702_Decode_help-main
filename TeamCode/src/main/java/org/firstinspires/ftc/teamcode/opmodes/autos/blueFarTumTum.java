@@ -82,7 +82,7 @@ public class blueFarTumTum extends OpMode {
             case 0:
                 artifactsLoaded = 0;
                 intake.spinIn();
-                shooterSeq.start();
+                shooterSeq.start(ShooterManualSubsystem.ShooterState.AUTOHIGH);
                 pathState = 1;
                 break;
 
@@ -120,7 +120,7 @@ public class blueFarTumTum extends OpMode {
                 intakeSequence();
                 if (!follower.isBusy()) {
                     follower.followPath(paths.scoreTwo(), true);
-                    shooterSeq.start();
+                    shooterSeq.start(ShooterManualSubsystem.ShooterState.AUTOHIGH);
                     artifactsLoaded = 0;
                     pathState = 3;
                 }
@@ -140,7 +140,7 @@ public class blueFarTumTum extends OpMode {
                 intakeSequence();
                 if (!follower.isBusy()) {
                     follower.followPath(paths.scoreThird(), true);
-                    shooterSeq.start();
+                    shooterSeq.start(ShooterManualSubsystem.ShooterState.AUTOHIGH);
                     artifactsLoaded = 0;
                     pathState = 5;
                 }

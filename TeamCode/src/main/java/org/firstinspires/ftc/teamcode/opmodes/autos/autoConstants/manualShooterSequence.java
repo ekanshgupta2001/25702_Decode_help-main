@@ -4,6 +4,7 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.opmodes.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterManualSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
@@ -50,6 +51,8 @@ public class manualShooterSequence {
     // Minimum time after rotation before firing (let things settle)
     private static final double SETTLE_TIME_SEC = 0.3;
 
+    private double DECREASE = 1;
+
     public manualShooterSequence(HardwareMap hardwareMap, Telemetry telemetry,
                                  Spindexer spindexer, Indexer indexer) {
         this.indexer = indexer;
@@ -57,12 +60,18 @@ public class manualShooterSequence {
         shooterSubsystem = new ShooterManualSubsystem(hardwareMap);
     }
 
-    public void start() {
-        shooterSubsystem.setState(ShooterManualSubsystem.ShooterState.AUTOHIGH);
+    public void start(ShooterManualSubsystem.ShooterState shootSpeed) {
+        if (shooterSubsystem.getCurrentState() != shootSpeed) {
+            // dont set shooter speed if already is set (if you set again it will toggle off)
+            shooterSubsystem.setState(shootSpeed);
+        }
         state = State.SPINNING_UP;
         timer.resetTimer();
     }
 
+    public void setDECREASE(double newDecrease) {
+        DECREASE = newDecrease;
+    }
     public void update() {
         // Always run the shooter PID
         shooterSubsystem.periodic();
@@ -75,7 +84,7 @@ public class manualShooterSequence {
             // SPIN UP
             // ==============================================================
             case SPINNING_UP:
-                if (shooterSubsystem.isAtTarget() || timer.getElapsedTimeSeconds() > SPINUP_TIMEOUT_SEC) {
+                if (shooterSubsystem.isAtTarget() || timer.getElapsedTimeSeconds() > SPINUP_TIMEOUT_SEC * DECREASE) {
                     // Shooter is at speed (or we timed out) — fire first shot
                     indexer.enable();
                     indexer.Index();
@@ -94,7 +103,7 @@ public class manualShooterSequence {
                     timer.resetTimer();
                 }
                 // Timeout in case indexer never leaves IDLE
-                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC) {
+                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC * DECREASE) {
                     state = State.ROTATE_1;
                     timer.resetTimer();
                 }
@@ -107,7 +116,7 @@ public class manualShooterSequence {
                     state = State.ROTATE_1;
                     timer.resetTimer();
                 }
-                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC) {
+                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC * DECREASE) {
                     indexer.disable();
                     state = State.ROTATE_1;
                     timer.resetTimer();
@@ -126,9 +135,9 @@ public class manualShooterSequence {
                 break;
 
             case WAIT_ROTATE_1:
-                if (spindexer.isAtTarget() || timer.getElapsedTimeSeconds() > ROTATE_TIMEOUT_SEC) {
+                if (spindexer.isAtTarget() || timer.getElapsedTimeSeconds() > ROTATE_TIMEOUT_SEC * DECREASE) {
                     // Small settle time before next shot
-                    if (timer.getElapsedTimeSeconds() > SETTLE_TIME_SEC) {
+                    if (timer.getElapsedTimeSeconds() > SETTLE_TIME_SEC * DECREASE) {
                         indexer.enable();
                         indexer.Index();
                         state = State.FIRE_2;
@@ -145,7 +154,7 @@ public class manualShooterSequence {
                     state = State.WAIT_SHOT_2;
                     timer.resetTimer();
                 }
-                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC) {
+                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC * DECREASE) {
                     state = State.ROTATE_2;
                     timer.resetTimer();
                 }
@@ -157,7 +166,7 @@ public class manualShooterSequence {
                     state = State.ROTATE_2;
                     timer.resetTimer();
                 }
-                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC) {
+                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC * DECREASE) {
                     indexer.disable();
                     state = State.ROTATE_2;
                     timer.resetTimer();
@@ -175,8 +184,8 @@ public class manualShooterSequence {
                 break;
 
             case WAIT_ROTATE_2:
-                if (spindexer.isAtTarget() || timer.getElapsedTimeSeconds() > ROTATE_TIMEOUT_SEC) {
-                    if (timer.getElapsedTimeSeconds() > SETTLE_TIME_SEC) {
+                if (spindexer.isAtTarget() || timer.getElapsedTimeSeconds() > ROTATE_TIMEOUT_SEC * DECREASE) {
+                    if (timer.getElapsedTimeSeconds() > SETTLE_TIME_SEC * DECREASE) {
                         indexer.enable();
                         indexer.Index();
                         state = State.FIRE_3;
@@ -193,7 +202,7 @@ public class manualShooterSequence {
                     state = State.WAIT_SHOT_3;
                     timer.resetTimer();
                 }
-                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC) {
+                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC * DECREASE) {
                     state = State.COMPLETE;
                 }
                 break;
@@ -202,7 +211,7 @@ public class manualShooterSequence {
                 if (indexer.currentState == Indexer.State.IDLE) {
                     state = State.COMPLETE;
                 }
-                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC) {
+                if (timer.getElapsedTimeSeconds() > SHOT_TIMEOUT_SEC * DECREASE) {
                     state = State.COMPLETE;
                 }
                 break;
