@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.autos.hardcoded;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -7,9 +8,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.opmodes.scrap.RobotTimer;
+import org.firstinspires.ftc.teamcode.subsystems.ShooterManualSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.Spindexer;
 
-//@Autonomous(name = "Re 3 auto hard code", group = "Actual Auto")
+@Autonomous(name = "Hard code red auto", group="Hard code")
 public class HardCodeRed extends OpMode {
 
 
@@ -18,7 +20,7 @@ public class HardCodeRed extends OpMode {
 
     CRServo LeftServo, RightServo;
 
-    private DcMotor frontLeft, frontRight, backLeft, backRight, shooter, spinner, LeftIntake;
+    private DcMotor frontLeft, frontRight, backLeft, backRight, spinner, LeftIntake;
 
     boolean pressedTriangle, pressedSquare, pressedCross, shooterOn = false;
     private double currentShooterPower = 0.0;
@@ -31,7 +33,7 @@ public class HardCodeRed extends OpMode {
     private final Intake intake = new Intake();
 
     int shootsLeft = 3;
-
+    private ShooterManualSubsystem shooter;
     RobotTimer shootTimer = new RobotTimer(3000);
     RobotTimer backTimer = new RobotTimer(1400);
     RobotTimer strafeTimer = new RobotTimer(1100);
@@ -39,8 +41,9 @@ public class HardCodeRed extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                ShooterSet(-0.6);
+
                 // Start the shooter
+                shooter.setState(ShooterManualSubsystem.ShooterState.LOW);
                 driveBack();
                 setPathState(1);
                 break;
@@ -69,7 +72,7 @@ public class HardCodeRed extends OpMode {
                 break;
             case 3:
                 if (shootTimer.IsDone()) {
-//                    spindexer.rotateClockwise(false);
+                    spindexer.rotateCounterclockwise(false);
                     shootTimer.start();
                     setPathState(4);
                 }
@@ -83,7 +86,7 @@ public class HardCodeRed extends OpMode {
                 break;
             case 5:
                 if (shootTimer.IsDone()) {
-//                    spindexer.rotateClockwise(false);
+                    spindexer.rotateCounterclockwise(false);
                     shootTimer.start();
                     setPathState(6);
                 }
@@ -142,9 +145,7 @@ public class HardCodeRed extends OpMode {
     public void stopDrive() {
         setAllMotors(0);
     }
-    public void ShooterSet(double power) {
-        shooter.setPower(power);
-    }
+
     /** This is the main loop of the OpMode, it will run repeatedly after clicking "Play". **/
     @Override
     public void loop() {
@@ -213,10 +214,7 @@ public class HardCodeRed extends OpMode {
         //simpleTurret.Init(hardwareMap);
 
         // ==== Shooter setup ====
-        shooter = hardwareMap.get(DcMotor.class, "shooter");
-        // FIX: Use RUN_WITHOUT_ENCODER for consistent power output
-        shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        shooter = new ShooterManualSubsystem(hardwareMap);
 
         // ==== Indexer setup ====
         indexer.Init(hardwareMap, telemetry, spindexer);
