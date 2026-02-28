@@ -21,9 +21,9 @@ public class ShooterManualSubsystem {
     // Define three discrete states for the shooter
     public enum ShooterState {
         OFF(0),
-        LOW(1400),    // Replace with your desired velocity
-        MEDIUM(1600), // Replace with your desired velocity
-        HIGH(1970),   // Replace with your desired velocity
+        LOW(1450),    // Replace with your desired velocity
+        MEDIUM(1550), // Replace with your desired velocity
+        HIGH(1950),   // Replace with your desired velocity
         AUTOHIGH(1900);
 
         public final double targetVelocity;

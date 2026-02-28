@@ -42,7 +42,7 @@ public class Spindexer {
     // Timers
     private final Timer pidTimer = new Timer();
     private final Timer moveTimer = new Timer();
-    private static final double MIN_MOVE_DELAY = 0.3;
+    private static final double MIN_MOVE_DELAY = 0.05;
 
     public void init(HardwareMap hardwareMap, boolean reset) {
         spindexer = hardwareMap.get(DcMotorEx.class, motorName);

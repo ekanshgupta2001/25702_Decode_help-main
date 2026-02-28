@@ -20,7 +20,7 @@ public class Indexer {
 
     // FIND THESE VALUES WITH THE TEST UPDATE
     private final double INDEXER_START = 0.48;
-    private final double INDEXER_END = 0.2989;
+    private final double INDEXER_END = 0.2889; // previous was 0.2989
 
     // New movement system variables
     public enum State { IDLE, INDEXING_UP, INDEXING_DOWN, SPINNING}
@@ -47,7 +47,7 @@ public class Indexer {
     private int shootingAndSpinningALL = 0;
 
     private Spindexer spindexer;
-    private RobotTimer indexerTimer = new RobotTimer(900);
+    private RobotTimer indexerTimer = new RobotTimer(400);
     private RobotTimer spindexerSpinningTimer = new RobotTimer(1000);
     // Track which sequence we're running
 

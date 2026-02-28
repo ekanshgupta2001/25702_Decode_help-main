@@ -116,15 +116,17 @@ public class Teleop extends OpMode {
         indexer.Update();
         spindexer.update();
         shooter.periodic();
+        shooterSeq.update();
         // Manual Spindexer logic
         if (indexer.currentState == Indexer.State.IDLE) {
-            if (gamepad1.left_bumper) {
-                spindexer.rotateCounterclockwise();
+            if (gamepad1.leftBumperWasPressed()) {
+                spindexer.rotateCounterclockwise(true);
             }
         }
 
 
         telemetry.addData("X", follower.getPose().getX());
+        telemetry.addData("Fast shooter debug: ", shooterSeq.getState());
         telemetry.addData("Y", follower.getPose().getY());
         telemetry.addData("Shooter vel: ", shooter.getVelocity());
         telemetry.addData("Shooter target vel: ", shooter.getTargetVelocity());

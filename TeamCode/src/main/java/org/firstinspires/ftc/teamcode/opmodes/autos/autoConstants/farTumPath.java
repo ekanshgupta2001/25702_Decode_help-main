@@ -14,8 +14,8 @@ public class farTumPath {
     public Pose start = new Pose(56, 8, Math.toRadians(288));
     public Pose scoreFirst = new Pose(56, 15, Math.toRadians(288));
 
-    public Pose setFirstPick = new Pose(51.62162162162162, 22.696827262044657, Math.toRadians(360));
-    public Pose firstPick = new Pose(32.027027027027046, 22.696827262044657, Math.toRadians(360));
+    public Pose setFirstPick = new Pose(51.62162162162162, 42.696827262044657, Math.toRadians(360));
+    public Pose firstPick = new Pose(22.027027027027046, 22.696827262044657, Math.toRadians(360));
 
     public Pose scoreSecond = new Pose(56, 15, Math.toRadians(288));
 
