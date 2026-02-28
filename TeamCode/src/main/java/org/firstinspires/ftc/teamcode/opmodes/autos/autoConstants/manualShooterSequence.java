@@ -40,7 +40,7 @@ public class manualShooterSequence {
     private Spindexer spindexer;
 
     // How long to wait for the shooter to spin up before firing anyway
-    private static final double SPINUP_TIMEOUT_SEC = 3.0;
+    private static final double SPINUP_TIMEOUT_SEC = 4.0;
 
     // How long to wait for the indexer to complete a shot before moving on
     private static final double SHOT_TIMEOUT_SEC = 1.0;

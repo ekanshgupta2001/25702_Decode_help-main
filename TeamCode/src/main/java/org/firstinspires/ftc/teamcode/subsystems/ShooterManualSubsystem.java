@@ -23,7 +23,7 @@ public class ShooterManualSubsystem {
         OFF(0),
         LOW(1450),    // Replace with your desired velocity
         MEDIUM(1550), // Replace with your desired velocity
-        HIGH(1950),   // Replace with your desired velocity
+        HIGH(1940),   // Replace with your desired velocity
         AUTOHIGH(1900);
 
         public final double targetVelocity;
