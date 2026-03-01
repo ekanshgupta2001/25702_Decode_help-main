@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.PoseStorage;
 import org.firstinspires.ftc.teamcode.util.Spinner;
 
-@Autonomous
+//@Autonomous
 public class blueCloseAuto extends OpMode {
 
     private Robot r;

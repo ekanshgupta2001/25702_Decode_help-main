@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.util.Spinner;
 import org.firstinspires.ftc.teamcode.opmodes.autos.autoConstants.autoShooterSequence;
 import org.firstinspires.ftc.teamcode.opmodes.autos.autoConstants.closePath;
 
-@Autonomous
+//@Autonomous
 public class blueFarAuto extends OpMode {
 
     private Robot r;

@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.util.Spinner;
 import org.firstinspires.ftc.teamcode.opmodes.autos.autoConstants.autoShooterSequence;
 import org.firstinspires.ftc.teamcode.opmodes.autos.autoConstants.closePath;
 
-@Autonomous
+//@Autonomous
 public class redCloseAuto extends OpMode {
 
     private Robot r;
