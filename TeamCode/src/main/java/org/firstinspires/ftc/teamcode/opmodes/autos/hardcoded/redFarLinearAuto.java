@@ -132,6 +132,8 @@ public class redFarLinearAuto extends LinearOpMode {
             spindexer.update();
             indexer.Update();
             shooterSeq.update();
+            telemetry.addData("Shooter velocity: ", shooterSeq.shooterSubsystem.getVelocity());
+            telemetry.addData("Shooter target velocity: ", shooterSeq.shooterSubsystem.getTargetVelocity());
             telemetry.update();
         }
     }
