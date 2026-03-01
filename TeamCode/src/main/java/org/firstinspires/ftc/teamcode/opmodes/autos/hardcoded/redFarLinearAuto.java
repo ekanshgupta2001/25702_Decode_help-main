@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.opmodes.autos.autoConstants.manualShooterSequence;
 import org.firstinspires.ftc.teamcode.subsystems.*;
 
-@Autonomous(name = "Linear Blue Far Auto", group = "Linear")
-public class blueFarLinearAuto extends LinearOpMode {
+@Autonomous(name = "Linear Red Far Auto", group = "Linear")
+public class redFarLinearAuto extends LinearOpMode {
 
     private Intake intake = new Intake();
     private Indexer indexer = new Indexer();
@@ -63,7 +63,7 @@ public class blueFarLinearAuto extends LinearOpMode {
         stopMotors();
 
 
-        rotateLeft(0.5);
+        rotateRight(0.5);
         runWithUpdates(550); // prev was 600
         stopMotors();
 
@@ -90,7 +90,7 @@ public class blueFarLinearAuto extends LinearOpMode {
         stopMotors();
 
         // turn back
-        rotateRight(0.5);
+        rotateLeft(0.5);
         runWithUpdates(550);
         stopMotors();
 
