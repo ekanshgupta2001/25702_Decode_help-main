@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.opmodes.autos.autoConstants.manualShooterSequence;
 import org.firstinspires.ftc.teamcode.subsystems.*;
 
-@Autonomous(name = "Blue Close Auto", group = "Linear")
-public class bluemultiClose extends LinearOpMode {
+@Autonomous(name = "Blue Gladius Auto", group = "Linear")
+public class blueGladiusAuto extends LinearOpMode {
 
     private Intake intake = new Intake();
     private Indexer indexer = new Indexer();
@@ -49,49 +49,15 @@ public class bluemultiClose extends LinearOpMode {
         if (isStopRequested()) return;
 
         // --- Execution ---
-        // 1. move while shooting
-        setAllMotors(0.5);
-        runWithUpdates(500);
+
+        // 1. Start Shooter
         intake.spinIn();
-        shooterSeq.start(ShooterManualSubsystem.ShooterState.MEDIUM);
-        shooterSeqUpdate();
-        runWithUpdates(500);
-        stopMotors();
-        runWithUpdates(2000); // Drive forward for 900ms while updating prev (900)
+        shooterSeq.start(ShooterManualSubsystem.ShooterState.AUTOHIGH);
+        shooterSeqUpdate(); // wait for shooter seq to be done
+        runWithUpdates(2000); // Wait 2 seconds while updating subsystems
         shooterSeq.resetToIdle();
 
-        // 2. Intake 1
-        intake.spinIn();
-        mecanumDrive(-0.1, 0.4, 0.3);
-        runWithUpdates(1000); // Wait 2 seconds while updating subsystems
-        stopMotors();
 
-        spindexer.rotateCounterclockwise(true);
-        runWithUpdates(900);
-        setAllMotors(-0.2);
-        runWithUpdates(300);
-        stopMotors();
-        spindexer.rotateCounterclockwise(true);
-        runWithUpdates(900);
-        setAllMotors(-0.2);
-        runWithUpdates(300);
-        stopMotors();
-        spindexer.rotateCounterclockwise(true);
-        runWithUpdates(900);
-
-        mecanumDrive(0.1, -0.4, -0.3);
-        runWithUpdates(1000);
-        stopMotors();
-
-        shooterSeq.start(ShooterManualSubsystem.ShooterState.MEDIUM);
-        shooterSeqUpdate();
-        runWithUpdates(2000);
-        shooterSeq.resetToIdle();
-        strafeLeft(0.5);
-        runWithUpdates(400);
-        stopMotors();
-
-/*
 
         rotateLeft(0.5);
         runWithUpdates(550); // prev was 600
@@ -99,8 +65,9 @@ public class bluemultiClose extends LinearOpMode {
 
         // move toward balls
         setAllMotors(-0.8);
-        runWithUpdates(700);
+        runWithUpdates(800);
         stopMotors();
+        /*
         spindexer.rotateCounterclockwise(true);
         runWithUpdates(900);
         setAllMotors(-0.2);
@@ -137,11 +104,11 @@ public class bluemultiClose extends LinearOpMode {
 
         // leave
         setAllMotors(-0.5);
-        runWithUpdates(240);
+        runWithUpdates(340);
         stopMotors();
-
-
 */
+
+
 
         // Continue adding your steps linearly...
     }
@@ -185,31 +152,7 @@ public class bluemultiClose extends LinearOpMode {
         frontRight.setPower(-speed);
         backRight.setPower(-speed);
     }
-    public void strafeLeft(double speed) {
-        frontLeft.setPower(speed);
-        frontRight.setPower(-speed);
-        backLeft.setPower(-speed);
-        backRight.setPower(speed);
-    }
-
     private void stopMotors() {
         setAllMotors(0);
-    }
-
-    private void mecanumDrive(double forward, double strafe, double turn) {
-        double fl = forward + strafe + turn;
-        double fr = forward - strafe - turn;
-        double bl = forward - strafe + turn;
-        double br = forward + strafe - turn;
-
-        double max = Math.max(1.0, Math.max(
-                Math.max(Math.abs(fl), Math.abs(fr)),
-                Math.max(Math.abs(bl), Math.abs(br))
-        ));
-
-        frontLeft.setPower(fl / max);
-        frontRight.setPower(fr / max);
-        backLeft.setPower(bl / max);
-        backRight.setPower(br / max);
     }
 }

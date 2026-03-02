@@ -50,7 +50,7 @@ public class redMultiClose extends LinearOpMode {
 
         // --- Execution ---
         // 1. move while shooting
-        setAllMotors(-0.5);
+        setAllMotors(0.5);
         runWithUpdates(500);
         intake.spinIn();
         shooterSeq.start(ShooterManualSubsystem.ShooterState.MEDIUM);

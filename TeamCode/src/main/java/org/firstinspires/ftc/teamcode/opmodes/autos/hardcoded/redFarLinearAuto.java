@@ -59,12 +59,12 @@ public class redFarLinearAuto extends LinearOpMode {
 
         // 2. Movement example
         setAllMotors(-0.5);
-        runWithUpdates(925); // Drive forward for 900ms while updating prev (900)
+        runWithUpdates(915); // Drive forward for 900ms while updating prev (900)
         stopMotors();
 
 
         rotateRight(0.5);
-        runWithUpdates(550); // prev was 600
+        runWithUpdates(500); // prev was 600
         stopMotors();
 
         // move toward balls
